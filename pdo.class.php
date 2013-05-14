@@ -94,10 +94,14 @@ class PDOStatement extends \PDOStatement {
 			
 			foreach ($this->placeholders as $i => $name) {
 				if (!isset($parameters[$name])) {
-					throw new \PDOException("Missing parameter '{$name}'.");
+					if (array_key_exists($name, $parameters) && $parameters[$name] === null) {
+						$this->bindValue($i + 1, null, PDO::PARAM_NULL);
+					} else {
+						throw new \PDOException("Missing parameter '{$name}'.");
+					}
+				} else {
+					$this->bindValue($i + 1, $parameters[$name], $this->placeholder_param_types[$name]);
 				}
-			
-				$this->bindValue($i + 1, $parameters[$name], $this->placeholder_param_types[$name]);
 			}
 			
 			foreach ($parameters as $name => $value) {
