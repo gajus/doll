@@ -16,15 +16,19 @@ class PDO extends \ay\pdo\PDO {
     }
 	
 	public function exec ($statement) {
+		$return = parent::exec($statement);
+		
 		$this->registerQuery();
 		
-		return parent::exec($statement);
+		return $return;
 	}
 	
 	public function query () {
+		$return = call_user_func_array(['parent', 'query'], func_get_args());
+		
 		$this->registerQuery();
-	
-		return call_user_func_array(['parent', 'query'], func_get_args());
+		
+		return $return;
 	}
 	
 	public function registerQuery () {

@@ -26,7 +26,7 @@ class PDOStatement extends \PDOStatement {
 			return call_user_func_array(['parent', 'fetchAll'], func_get_args());
 		}
 	}
-    
+        
 	public function execute($parameters = []) {
 		// it might be that the query is using question-mark binding,
 		// in which case the input paramters will have numeric keys
@@ -58,7 +58,7 @@ class PDOStatement extends \PDOStatement {
 			parent::execute($parameters);
 		}
 		
-		if (strpos(trim($this->queryString), 'INSERT') === 0) {		
+		if (strpos(trim($this->queryString), 'INSERT') === 0) {	
 			return $this->dbh->lastInsertId();
 		}
 
