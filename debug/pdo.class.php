@@ -30,7 +30,11 @@ class PDO extends \ay\pdo\PDO {
 	public function registerQuery () {
 		if (++$this->count === 100) {
 			$queries = parent::query("SHOW PROFILES;")->fetchAll(\PDO::FETCH_ASSOC);
-		
+			
+			# Should probably be using information_schema in the future.
+			#ay( parent::query("SELECT * FROM INFORMATION_SCHEMA.PROCESSLIST;")->fetchAll(PDO::FETCH_ASSOC) );
+			#ay( parent::query("SELECT QUERY_ID, SEQ, STATE, FORMAT(DURATION, 6) AS DURATION FROM INFORMATION_SCHEMA.PROFILING ORDER BY SEQ;")->fetchAll(PDO::FETCH_ASSOC) );
+			
 			$this->query_log = array_merge($this->query_log, $queries);
 			
 			$this->count = 0;
