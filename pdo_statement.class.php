@@ -45,10 +45,6 @@ class PDOStatement extends \PDOStatement {
 				}
 			}
 			
-			foreach ($parameters as $name => $value) {
-				$this->bindValue($name, $value, $this->placeholder_param_types[$name]);
-			}
-			
 			parent::execute();
 		} else {
 			if (!empty($this->placeholder_param_types)) {
