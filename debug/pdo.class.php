@@ -38,6 +38,12 @@ class PDO extends \ay\pdo\PDO {
 	}
 	
 	public function __destruct () {
+		$queries = parent::query("SHOW PROFILES;")->fetchAll(\PDO::FETCH_ASSOC);
+		
+		if ($queries) {
+			$this->query_log = array_merge($this->query_log, array_slice($queries, count($this->query_log) - $queries[0]['Query_ID'] + 1));
+		}
+		
 		$total_duration	= 0;
 	
 		$queries = array_map(function($e) use(&$total_duration) { $e['Duration'] = 1000000*$e['Duration']; $total_duration += $e['Duration']; $e['Query'] = preg_replace('/\s+/', ' ', $e['Query']); return $e; }, $this->query_log);
