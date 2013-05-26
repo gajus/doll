@@ -30,11 +30,29 @@ class PDO extends \ay\pdo\PDO {
 		return $return;
 	}
 	
+	public function beginTransaction () {
+		parent::beginTransaction();
+		
+		$this->registerQuery('START TRANSACTION');
+	}
+	
+	public function commit () {
+		parent::commit();
+		
+		$this->registerQuery('COMMIT');
+	}
+	
+	public function rollBack () {
+		parent::rollBack();
+		
+		$this->registerQuery('ROLLBACK');
+	}
+	
 	public function registerQuery ($statement, array $arguments = []) {
 		$statement = trim(preg_replace('/\s+/', ' ', str_replace("\n", ' ', $statement)));
 		$backtrace = debug_backtrace()[1];
 		
-		$this->query_log[] = ['file' => $backtrace['file'], 'line' => $backtrace['line'], 'query' => $statement, 'arguments' => $arguments];
+		$this->query_log[] = ['query' => $statement, 'arguments' => $arguments, 'backtrace' => debug_backtrace()];
 		
 		if (count($this->query_log) %100 === 0) {
 			$this->addProfileData();
@@ -50,12 +68,15 @@ class PDO extends \ay\pdo\PDO {
 		
 		foreach ($queries as $q) {
 			$this->query_log[$q['Query_ID'] - 1]['duration'] = 1000000*$q['Duration'];
+			$this->query_log[$q['Query_ID'] - 1]['original_query'] = $q['Query'];
 		}
 
 	}
 	
 	public function __destruct () {
 		$this->addProfileData();
+		
+		#ay($this->query_log);
 		
 		require_once __DIR__ . '/sql-formatter-master/lib/SqlFormatter.php';
 		
@@ -104,6 +125,7 @@ class PDO extends \ay\pdo\PDO {
 		.mysql-debug-table .mysql-arguments,
 		.mysql-debug-table .mysql-plain { overflow: hidden; height: 20px; margin: 0; padding: 0; }
 		.mysql-debug-table .mysql-formatted { display: none; }
+		.mysql-debug-table .mysql-formatted p { margin: 0 0 10px 0; }
 		.mysql-debug-table tr.open .mysql-arguments { height: intrinsic; }
 		.mysql-debug-table tr.open .mysql-plain { display: none; }
 		.mysql-debug-table tr.open .mysql-formatted { display: block; }
@@ -112,6 +134,8 @@ class PDO extends \ay\pdo\PDO {
 		<script>
 		if (typeof jQuery !== 'undefined') {
 			$(function () {
+				$('.mysql-debug-table tr').removeClass('open');
+				
 				$('.mysql-debug-table tr').on('click', function () {
 					$(this).toggleClass('open');
 				});
@@ -130,11 +154,14 @@ class PDO extends \ay\pdo\PDO {
 			</thead>
 			<tbody>
 			<?php foreach ($this->query_log as $i => $q):?>
-			<tr>
+			<tr class="open">
 				<td><?=$i + 1?></td>
 				<td>
 					<div class="mysql-plain"><?=$q['query']?></div>
-					<div class="mysql-formatted"><?=\SqlFormatter::format($q['query'])?></div>
+					<div class="mysql-formatted">
+						<?=\SqlFormatter::format($q['query'])?>
+						<pre><?php foreach ($q['backtrace'] as $t) echo $t['file'] . ' (' . $t['line'] . ')' . "\n";?></pre>
+					</div>
 				</td>
 				<td>
 					<pre class="mysql-arguments"><?=($q['arguments'] ? json_encode($q['arguments'], JSON_PRETTY_PRINT|JSON_UNESCAPED_SLASHES) : 'N/A')?></pre>
