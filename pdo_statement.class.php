@@ -1,7 +1,7 @@
 <?php
 namespace ay\pdo;
 
-class PDOStatement extends \PDOStatement {
+class PDO_Statement extends \PDOStatement {
 	public $dbh,
 		   $placeholder_param_types,
 		   $placeholders;

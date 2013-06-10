@@ -1,7 +1,7 @@
 <?php
 namespace ay\pdo\debug;
 
-class PDOStatement extends \ay\pdo\PDOStatement {    
+class PDO_Statement extends \ay\pdo\PDO_Statement {    
 	public function execute($arguments = []) {
 		$return = parent::execute($arguments);
 		
