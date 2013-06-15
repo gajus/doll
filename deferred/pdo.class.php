@@ -12,7 +12,7 @@ class PDO extends \ay\pdo\PDO {
     
     private function defferedConstruct () {
 	    if ($this->initialised === false) {
-			parent::__construct($this->constructor[0], $this->constructor[1], $this->constructor[2], $this->constructor[3]);
+	    	parent::__construct($this->constructor[0], $this->constructor[1], $this->constructor[2], $this->constructor[3]);
 		}
     }
 	
@@ -28,9 +28,15 @@ class PDO extends \ay\pdo\PDO {
 		return call_user_func_array(['parent', 'query'], func_get_args());
 	}
 	
+	public function prepare ($statement, $driver_options = []) {
+		$this->defferedConstruct();
+		
+		return parent::prepare($statement, $driver_options);
+	}
+	
 	public function beginTransaction () {
 		$this->defferedConstruct();
 		
-		$this->registerQuery('START TRANSACTION');
+		parent::beginTransaction();
 	}
 }
