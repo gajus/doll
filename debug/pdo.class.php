@@ -15,37 +15,65 @@ class PDO extends \ay\pdo\PDO {
     }
 	
 	public function exec ($statement) {
-		$return = parent::exec($statement);
+		$result = parent::exec($statement);
 		
 		$this->registerQuery($statement);
 		
-		return $return;
+		return $result;
 	}
 	
 	public function query ($statement) {
-		$return = call_user_func_array(['parent', 'query'], func_get_args());
+		$result = call_user_func_array(['parent', 'query'], func_get_args());
 		
 		$this->registerQuery($statement);
 		
-		return $return;
+		return $result;
+	}
+	
+	/**
+	 * Method [ <internal:PDO> public method query ] {}
+	 */
+	public function query ($statement) {
+		$this->defferedConstruct();
+		
+		$args = func_get_args();
+		$num = func_num_args();
+		
+		if ($num === 1) {
+			$result = parent::query($args[0]);
+		} else if ($num === 2) {
+			$result = parent::query($args[0], $args[1]);
+		} else if ($num === 3) {
+			$result = parent::query($args[0], $args[1], $args[2]);
+		}
+		
+		$this->registerQuery($statement);
+		
+		return $result;
 	}
 	
 	public function beginTransaction () {
-		parent::beginTransaction();
+		$result = parent::beginTransaction();
 		
 		$this->registerQuery('START TRANSACTION');
+		
+		return $result;
 	}
 	
 	public function commit () {
-		parent::commit();
+		$result = parent::commit();
 		
 		$this->registerQuery('COMMIT');
+		
+		return $result;
 	}
 	
 	public function rollBack () {
-		parent::rollBack();
+		$result = parent::rollBack();
 		
 		$this->registerQuery('ROLLBACK');
+		
+		return $result;
 	}
 	
 	public function registerQuery ($statement, array $arguments = []) {
@@ -58,6 +86,7 @@ class PDO extends \ay\pdo\PDO {
 			$this->addProfileData();
 			
 			# Should probably be using information_schema in the future.
+			
 			#ay( parent::query("SELECT * FROM INFORMATION_SCHEMA.PROCESSLIST;")->fetchAll(PDO::FETCH_ASSOC) );
 			#ay( parent::query("SELECT QUERY_ID, SEQ, STATE, FORMAT(DURATION, 6) AS DURATION FROM INFORMATION_SCHEMA.PROFILING ORDER BY SEQ;")->fetchAll(PDO::FETCH_ASSOC) );
 		}
@@ -75,8 +104,6 @@ class PDO extends \ay\pdo\PDO {
 	
 	public function __destruct () {
 		$this->addProfileData();
-		
-		#ay($this->query_log);
 		
 		require_once __DIR__ . '/sql-formatter-master/lib/SqlFormatter.php';
 		
