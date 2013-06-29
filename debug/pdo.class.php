@@ -22,20 +22,10 @@ class PDO extends \ay\pdo\PDO {
 		return $result;
 	}
 	
-	public function query ($statement) {
-		$result = call_user_func_array(['parent', 'query'], func_get_args());
-		
-		$this->registerQuery($statement);
-		
-		return $result;
-	}
-	
 	/**
 	 * Method [ <internal:PDO> public method query ] {}
 	 */
 	public function query ($statement) {
-		$this->defferedConstruct();
-		
 		$args = func_get_args();
 		$num = func_num_args();
 		
