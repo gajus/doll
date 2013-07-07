@@ -1,84 +1,19 @@
 <?php
 namespace ay\pdo\debug;
 
-class PDO extends \ay\pdo\PDO {
-	private
-		$query_log = [];
-	
+class PDO extends \ay\pdo\log\PDO {	
 	public function __construct($dsn, $username = null, $password = null, array $driver_options = []) {
 		parent::__construct($dsn, $username, $password, $driver_options);
 		
-	    $this->setAttribute(\PDO::ATTR_STATEMENT_CLASS, ['ay\pdo\debug\PDO_Statement', [$this]]);
-	    
 	    parent::exec("SET `profiling` = 1;");
 	    self::exec("SET `profiling_history_size` = 100;");
     }
 	
-	public function exec ($statement) {
-		$result = parent::exec($statement);
-		
-		$this->registerQuery($statement);
-		
-		return $result;
-	}
-	
-	/**
-	 * Method [ <internal:PDO> public method query ] {}
-	 */
-	public function query ($statement) {
-		$args = func_get_args();
-		$num = func_num_args();
-		
-		if ($num === 1) {
-			$result = parent::query($args[0]);
-		} else if ($num === 2) {
-			$result = parent::query($args[0], $args[1]);
-		} else if ($num === 3) {
-			$result = parent::query($args[0], $args[1], $args[2]);
-		}
-		
-		$this->registerQuery($statement);
-		
-		return $result;
-	}
-	
-	public function beginTransaction () {
-		$result = parent::beginTransaction();
-		
-		$this->registerQuery('START TRANSACTION');
-		
-		return $result;
-	}
-	
-	public function commit () {
-		$result = parent::commit();
-		
-		$this->registerQuery('COMMIT');
-		
-		return $result;
-	}
-	
-	public function rollBack () {
-		$result = parent::rollBack();
-		
-		$this->registerQuery('ROLLBACK');
-		
-		return $result;
-	}
-	
-	public function registerQuery ($statement, array $arguments = []) {
-		$statement = trim(preg_replace('/\s+/', ' ', str_replace("\n", ' ', $statement)));
-		$backtrace = debug_backtrace()[1];
-		
-		$this->query_log[] = ['query' => $statement, 'arguments' => $arguments, 'backtrace' => debug_backtrace()];
+	protected function registerQuery ($statement, array $arguments = []) {
+		parent::registerQuery($statement, $arguments);
 		
 		if (count($this->query_log) %100 === 0) {
 			$this->addProfileData();
-			
-			# Should probably be using information_schema in the future.
-			
-			#ay( parent::query("SELECT * FROM INFORMATION_SCHEMA.PROCESSLIST;")->fetchAll(PDO::FETCH_ASSOC) );
-			#ay( parent::query("SELECT QUERY_ID, SEQ, STATE, FORMAT(DURATION, 6) AS DURATION FROM INFORMATION_SCHEMA.PROFILING ORDER BY SEQ;")->fetchAll(PDO::FETCH_ASSOC) );
 		}
 	}
 	
@@ -89,7 +24,6 @@ class PDO extends \ay\pdo\PDO {
 			$this->query_log[$q['Query_ID'] - 1]['duration'] = 1000000*$q['Duration'];
 			$this->query_log[$q['Query_ID'] - 1]['original_query'] = $q['Query'];
 		}
-
 	}
 	
 	public function __destruct () {
@@ -195,6 +129,6 @@ class PDO extends \ay\pdo\PDO {
 			</tfoot>
 		</table>
 		</div>
-		<?php
+	<?php
 	}
 }
