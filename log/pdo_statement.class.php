@@ -2,10 +2,10 @@
 namespace ay\pdo\log;
 
 class PDO_Statement extends \ay\pdo\PDO_Statement {    
-	public function execute($arguments = []) {
-		$return = parent::execute($arguments);
+	public function execute($parameters = []) {
+		$return = parent::execute($parameters);
 		
-		$this->dbh->registerQuery($this->queryString, $arguments);
+		$this->dbh->registerQuery($this->queryString, $parameters);
 		
 		return $return;
 	}

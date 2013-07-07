@@ -9,8 +9,8 @@ class PDO extends \ay\pdo\log\PDO {
 	    self::exec("SET `profiling_history_size` = 100;");
     }
 	
-	protected function registerQuery ($statement, array $arguments = []) {
-		parent::registerQuery($statement, $arguments);
+	protected function registerQuery ($statement, array $parameters = []) {
+		parent::registerQuery($statement, $parameters);
 		
 		if (count($this->query_log) %100 === 0) {
 			$this->addProfileData();
@@ -70,14 +70,14 @@ class PDO extends \ay\pdo\log\PDO {
 		.mysql-debug-table td,
 		.mysql-debug-table th { padding: 10px; vertical-align: top; }
 		.mysql-debug-table th.id { width: 50px; }
-		.mysql-debug-table th.arguments { width: 300px; }
+		.mysql-debug-table th.parameters { width: 300px; }
 		.mysql-debug-table th.duration { width: 100px; }
 		.mysql-debug-table tfoot { font-weight: bold; }
-		.mysql-debug-table .mysql-arguments,
+		.mysql-debug-table .mysql-parameters,
 		.mysql-debug-table .mysql-plain { overflow: hidden; height: 20px; margin: 0; padding: 0; }
 		.mysql-debug-table .mysql-formatted { display: none; }
 		.mysql-debug-table .mysql-formatted p { margin: 0 0 10px 0; }
-		.mysql-debug-table tr.open .mysql-arguments { height: intrinsic; }
+		.mysql-debug-table tr.open .mysql-parameters { height: intrinsic; }
 		.mysql-debug-table tr.open .mysql-plain { display: none; }
 		.mysql-debug-table tr.open .mysql-formatted { display: block; }
 		.mysql-debug-table tr.open pre { white-space: pre; }
@@ -99,7 +99,7 @@ class PDO extends \ay\pdo\log\PDO {
 				<tr>
 					<th class="id">ID</th>
 					<th>Query</th>
-					<th class="arguments">Arguments</th>
+					<th class="parameters">Parameters</th>
 					<th class="duration">Duration</th>
 				</tr>
 			</thead>
@@ -115,7 +115,7 @@ class PDO extends \ay\pdo\log\PDO {
 					</div>
 				</td>
 				<td>
-					<pre class="mysql-arguments"><?=($q['arguments'] ? json_encode($q['arguments'], JSON_PRETTY_PRINT|JSON_UNESCAPED_SLASHES) : 'N/A')?></pre>
+					<pre class="mysql-parameters"><?=($q['parameters'] ? json_encode($q['parameters'], JSON_PRETTY_PRINT|JSON_UNESCAPED_SLASHES) : 'N/A')?></pre>
 				</td>
 				<td><?=$format_microseconds($q['duration'])?></td>
 			</tr>
