@@ -67,7 +67,7 @@ class PDO extends \ay\pdo\PDO {
 		return $result;
 	}
 	
-	protected function registerQuery ($statement, array $arguments = []) {
+	public function registerQuery ($statement, array $arguments = []) {
 		$statement = trim(preg_replace('/\s+/', ' ', str_replace("\n", ' ', $statement)));
 		$backtrace = debug_backtrace()[1];
 		
