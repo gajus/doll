@@ -9,7 +9,7 @@ class PDO extends \ay\pdo\log\PDO {
 	    self::exec("SET `profiling_history_size` = 100;");
     }
 	
-	protected function registerQuery ($statement, array $parameters = []) {
+	public function registerQuery ($statement, array $parameters = []) {
 		parent::registerQuery($statement, $parameters);
 		
 		if (count($this->query_log) %100 === 0) {
