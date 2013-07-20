@@ -31,28 +31,6 @@ Native PDO implementation returns boolean value indicating either success or fai
 
 Instead of using `bindValue` to define the parameter type, you can prefix the placeholder with either parameter type single-character reference, e.g. `i` for integer, `s` for string, etc.
 
-### Inserting data
-
-#### The native PDO implementation
-
-```PHP
-$db
-	->prepare("INSERT INTO `foo` SET `bar` = :bar;")
-	->execute(['bar' => 'qux']);
-
-$foo_id = $db->lastInsertId();
-```
-
-#### The ay\PDO implementation
-
-```PHP
-$foo_id = $db
-	->prepare("INSERT INTO `foo` SET `bar` = s:bar;")
-	->execute(['bar' => 'qux']);
-```
-
-This is done by checking if the executed query starts with "INSERT" string. It does not catter for "REPLACE" scenarion.
-
 ## ay\pdo\log\PDO
 
 Enables logging of all the queries, including prepared statement and the respective parameters. Queries can be retrieved as an array using ay\PDO `getQueryLog` method.

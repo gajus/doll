@@ -53,10 +53,6 @@ class PDO_Statement extends \PDOStatement {
 		
 			parent::execute($parameters);
 		}
-		
-		if (strpos(trim($this->queryString), 'INSERT') === 0) {	
-			return $this->dbh->lastInsertId();
-		}
 
 		return $this;
 	}
