@@ -8,15 +8,15 @@ class PDO extends \ay\pdo\PDO {
 	
 	public function __construct($dsn, $username = null, $password = null, array $driver_options = []) {
 		$this->constructor = [$dsn, $username, $password, $driver_options];
-    }
-    
-    private function defferedConstruct () {
-	    if ($this->initialised === false) {
-	    	$this->initialised = true;
-	    
-	    	parent::__construct($this->constructor[0], $this->constructor[1], $this->constructor[2], $this->constructor[3]);
+	}
+	
+	private function defferedConstruct () {
+		if ($this->initialised === false) {
+			$this->initialised = true;
+		
+			parent::__construct($this->constructor[0], $this->constructor[1], $this->constructor[2], $this->constructor[3]);
 		}
-    }
+	}
 	
 	public function exec ($statement) {
 		$this->defferedConstruct();

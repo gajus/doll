@@ -8,8 +8,8 @@ class PDO extends \ay\pdo\PDO {
 	public function __construct($dsn, $username = null, $password = null, array $driver_options = []) {
 		parent::__construct($dsn, $username, $password, $driver_options);
 		
-	    $this->setAttribute(\PDO::ATTR_STATEMENT_CLASS, ['ay\pdo\log\PDO_Statement', [$this]]);
-    }
+		$this->setAttribute(\PDO::ATTR_STATEMENT_CLASS, ['ay\pdo\log\PDO_Statement', [$this]]);
+	}
 	
 	public function getQueryLog () {
 		return $this->query_log;

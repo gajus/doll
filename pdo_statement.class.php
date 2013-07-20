@@ -8,25 +8,25 @@ class PDO_Statement extends \PDOStatement {
 	
   	protected function __construct(PDO $dbh) {
   		$this->dbh = $dbh;
-    }
-    
-    public function nextRowset() {
+	}
+	
+	public function nextRowset() {
  		if (!parent::nextRowset()) {
-		    throw new \PDOException('Rowset is not available.');
-	    }
-	    
-	    return $this;
-    }
-    
+			throw new \PDOException('Rowset is not available.');
+		}
+		
+		return $this;
+	}
+	
 	public function fetchAll ($how = null, $class_name = null, $ctor_args = null) {
 		if ($how === PDO::FETCH_KEY_ASSOC) {
-	    	$result = parent::fetchAll(PDO::FETCH_ASSOC);
-	    	return array_combine(array_map('array_shift', $result), $result);
+			$result = parent::fetchAll(PDO::FETCH_ASSOC);
+			return array_combine(array_map('array_shift', $result), $result);
 		} else {
 			return call_user_func_array(['parent', 'fetchAll'], func_get_args());
 		}
 	}
-        
+		
 	public function execute($parameters = []) {
 		// it might be that the query is using question-mark binding,
 		// in which case the input paramters will have numeric keys

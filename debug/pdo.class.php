@@ -5,9 +5,9 @@ class PDO extends \ay\pdo\log\PDO {
 	public function __construct($dsn, $username = null, $password = null, array $driver_options = []) {
 		parent::__construct($dsn, $username, $password, $driver_options);
 		
-	    parent::exec("SET `profiling` = 1;");
-	    self::exec("SET `profiling_history_size` = 100;");
-    }
+		parent::exec("SET `profiling` = 1;");
+		self::exec("SET `profiling_history_size` = 100;");
+	}
 	
 	public function registerQuery ($statement, array $parameters = []) {
 		parent::registerQuery($statement, $parameters);
