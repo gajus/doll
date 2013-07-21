@@ -22,7 +22,7 @@ class PDO extends \ay\pdo\deferred\PDO {
 			$backtrace = debug_backtrace(\DEBUG_BACKTRACE_IGNORE_ARGS, 5);
 			$backtrace = array_pop($backtrace);
 			
-			$this->query_log[] = ['raw_query' => $statement, 'parameters' => $parameters, 'backtrace' => $backtrace];
+			$this->query_log[] = ['statement' => $statement, 'parameters' => $parameters, 'backtrace' => $backtrace];
 		}
 	}
 	

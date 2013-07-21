@@ -18,6 +18,10 @@ class PDO extends \ay\pdo\log\PDO {
 	}
 	
 	private function addProfileData () {
+		if (!$this->isInitialised()) {
+			return;
+		}
+		
 		$queries = \PDO::query("SHOW PROFILES;")
 			->fetchAll(PDO::FETCH_ASSOC);
 		
@@ -37,10 +41,9 @@ class PDO extends \ay\pdo\log\PDO {
 		return $this->query_log;
 	}
 	
-	/*
-	public function __destruct () {
+	public function getQueryLogTable () {
 		$this->addProfileData();
-		exit;
+		
 		require_once __DIR__ . '/sql-formatter-master/lib/SqlFormatter.php';
 		
 		$total_duration	= array_sum(array_map(function ($e) { return $e['duration']; }, $this->query_log));
@@ -71,6 +74,9 @@ class PDO extends \ay\pdo\log\PDO {
 			return $pad ? sprintf('<span class="value">%.4f</span> <span class="measure">' . $suffix . '</span>', $time) : '<span class="value">' . $time . '</span> <span class="measure">' . $suffix . '</span>';
 		};
 		
+		#ay($this->query_log);
+		
+		ob_start();
 		?>
 		<style>
 		.mysql-debug-table { font-family: monospace; overflow: hidden; }
@@ -116,13 +122,13 @@ class PDO extends \ay\pdo\log\PDO {
 				</tr>
 			</thead>
 			<tbody>
-			<?php foreach ($this->query_log as $i => $q): if (!isset($q['query'])) { ay($q); } ?>
+			<?php foreach ($this->query_log as $i => $q): if (empty($q['statement'])) { continue; } ?>
 			<tr class="open">
 				<td><?=$i + 1?></td>
 				<td>
-					<div class="mysql-plain"><?=$q['query']?></div>
+					<div class="mysql-plain"><?=$q['statement']?></div>
 					<div class="mysql-formatted">
-						<?=\SqlFormatter::format($q['query'])?>
+						<?=\SqlFormatter::format($q['statement'])?>
 						<pre><?php foreach ($q['backtrace'] as $t) { if (!isset($t['file'])) { continue; } echo $t['file'] . ' (' . $t['line'] . ')' . "\n"; }?></pre>
 					</div>
 				</td>
@@ -142,5 +148,6 @@ class PDO extends \ay\pdo\log\PDO {
 		</table>
 		</div>
 	<?php
-	}*/
+		return ob_get_clean();
+	}
 }
