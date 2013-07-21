@@ -13,7 +13,7 @@ class PDO extends \PDO {
 		$this->setAttribute(\PDO::ATTR_STATEMENT_CLASS, ['ay\pdo\Pdo_Statement', [$this]]);
 	}
 	
-	public function prepare($statement, $driver_options = []) {
+	public function prepare ($statement, $driver_options = []) {
 		$param_types = [
 			'b' => PDO::PARAM_BOOL,
 			'n' => PDO::PARAM_NULL,
@@ -38,25 +38,5 @@ class PDO extends \PDO {
 		$statement->placeholder_param_types = $placeholder_param_types;
 		
 		return $statement;
-	}
-	
-	public function exec($query) {
-		$response = parent::exec($query);
-	
-		if (!$response) {
-			return FALSE;
-		}
-	
-		if (strpos(trim($query), 'INSERT') === 0) {
-			return $this->lastInsertId();
-		}
-		
-		return $response;
-	}
-
-	private function bind($b) {
-		$this->binds[$b[2]]	= $this->data_types[$b[1]];
-
-		return ':' . $b[2];
 	}
 }
