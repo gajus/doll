@@ -27,7 +27,7 @@ class PDO_Statement extends \PDOStatement {
 		}
 	}
 		
-	public function execute($parameters = []) {
+	public function execute ($parameters = []) {
 		// it might be that the query is using question-mark binding,
 		// in which case the input paramters will have numeric keys
 		
