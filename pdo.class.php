@@ -12,31 +12,4 @@ class PDO extends \PDO {
 		
 		$this->setAttribute(\PDO::ATTR_STATEMENT_CLASS, ['ay\pdo\Pdo_Statement', [$this]]);
 	}
-	
-	public function prepare ($statement, $driver_options = []) {
-		$param_types = [
-			'b' => PDO::PARAM_BOOL,
-			'n' => PDO::PARAM_NULL,
-			'i' => PDO::PARAM_INT,
-			's' => PDO::PARAM_STR,
-			'l' => PDO::PARAM_LOB
-		];
-	
- 		$placeholder_param_types = [];
- 		$placeholders = [];
- 		
- 		$query = preg_replace_callback('/([bnisl])\:(\w+)/', function ($b) use ($param_types, &$placeholder_param_types, &$placeholders) {
-			$placeholder_param_types[$b[2]] = $param_types[$b[1]];
-			
-			$placeholders[] = $b[2];
-			
-			return '?';
-		}, $statement);
-		
-		$statement = parent::prepare($query, $driver_options);
-		$statement->placeholders = $placeholders;
-		$statement->placeholder_param_types = $placeholder_param_types;
-		
-		return $statement;
-	}
 }
