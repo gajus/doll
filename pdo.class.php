@@ -12,4 +12,12 @@ class PDO extends \PDO {
 		
 		$this->setAttribute(\PDO::ATTR_STATEMENT_CLASS, ['ay\pdo\Pdo_Statement', [$this]]);
 	}
+	
+	public function prepare ($statement, $driver_options = []) {
+		try {	
+			return parent::prepare($statement, $driver_options);
+		} catch (\PDOException $e) {
+			ay( $e );
+		}
+	}
 }

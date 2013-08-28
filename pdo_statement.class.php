@@ -19,7 +19,19 @@ class PDO_Statement extends \PDOStatement {
 	}
 		
 	public function execute ($parameters = []) {
-		parent::execute($parameters);
+		#try {
+			if ($parameters) {
+				#if ($this->queryString === 'INSERT INTO `permission_group_permission` SET `permission_group_id` = ?, `permission_id` = ?;') {
+				#	ay( parent::execute($parameters), $this->errorInfo() );
+				#}
+			
+				parent::execute($parameters);
+			} else {
+				parent::execute();
+			}
+		#} catch (\PDOException $e) {
+		#	ay( $e );
+		#}
 
 		return $this;
 	}
