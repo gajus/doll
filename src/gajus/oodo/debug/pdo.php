@@ -1,7 +1,7 @@
 <?php
-namespace ay\pdo\debug;
+namespace gajus\oodo\debug;
 
-class PDO extends \ay\pdo\log\PDO {	
+class PDO extends \gajus\oodo\log\PDO {	
 	public function onInitialisation () {
 		parent::onInitialisation();
 	
@@ -46,7 +46,9 @@ class PDO extends \ay\pdo\log\PDO {
 		
 		require_once __DIR__ . '/sql-formatter-master/lib/SqlFormatter.php';
 		
-		$total_duration	= array_sum(array_map(function ($e) { return $e['duration']; }, $this->query_log));
+		$total_duration	= array_sum(array_map(function ($e) {
+				return $e['duration'];
+		}, $this->query_log));
 		
 		$format_microseconds = function ($time) {
 			$time = (int) $time;

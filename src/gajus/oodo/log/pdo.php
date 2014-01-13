@@ -1,12 +1,12 @@
 <?php
-namespace ay\pdo\log;
+namespace gajus\oodo\log;
 
-class PDO extends \ay\pdo\deferred\PDO {
+class PDO extends \gajus\oodo\deferred\PDO {
 	protected
 		$query_log = [];
 
 	public function onInitialisation () {
-		$this->setAttribute(\PDO::ATTR_STATEMENT_CLASS, ['ay\pdo\log\PDO_Statement', [$this]]);
+		$this->setAttribute(\PDO::ATTR_STATEMENT_CLASS, ['gajus\oodo\log\PDO_Statement', [$this]]);
 		
 		parent::onInitialisation();
 	}

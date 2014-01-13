@@ -1,21 +1,18 @@
 <?php
-require __DIR__ . '/../pdo.class.php';
-require __DIR__ . '/../pdo_statement.class.php';
-require __DIR__ . '/../deferred/pdo.class.php';
-require __DIR__ . '/../log/pdo.class.php';
-require __DIR__ . '/../log/pdo_statement.class.php';
-require __DIR__ . '/../debug/pdo.class.php';
+set_include_path( __DIR__ . '/../src/' );
 
-$db = new \ay\pdo\debug\PDO('mysql:dbname=test');
+spl_autoload_register();
 
-if (!($db instanceof \ay\pdo\PDO)) {
-	throw new ErrorException('Expecting $db to be instance of \ay\pdo\PDO.');
-} else if (!($db instanceof \ay\pdo\deferred\PDO)) {
-	throw new ErrorException('Expecting $db to be instance of \ay\pdo\deferred\PDO.');
-} else if (!($db instanceof \ay\pdo\log\PDO)) {
-	throw new ErrorException('Expecting $db to be instance of \ay\pdo\log\PDO.');
-} else if (!($db instanceof \ay\pdo\debug\PDO)) {
-	throw new ErrorException('Expecting $db to be instance of \ay\pdo\debug\PDO.');
+$db = new \gajus\pdo\debug\PDO('mysql:dbname=test');
+
+if (!($db instanceof \gajus\pdo\PDO)) {
+	throw new ErrorException('Expecting $db to be instance of \gajus\pdo\PDO.');
+} else if (!($db instanceof \gajus\pdo\deferred\PDO)) {
+	throw new ErrorException('Expecting $db to be instance of \gajus\pdo\deferred\PDO.');
+} else if (!($db instanceof \gajus\pdo\log\PDO)) {
+	throw new ErrorException('Expecting $db to be instance of \gajus\pdo\log\PDO.');
+} else if (!($db instanceof \gajus\pdo\debug\PDO)) {
+	throw new ErrorException('Expecting $db to be instance of \gajus\pdo\debug\PDO.');
 }
 
 if ($db->isInitialised() !== false) {
@@ -29,12 +26,12 @@ if ($db->isInitialised() !== true) {
 	throw new ErrorException('Should be initialised.');
 }
 
-if (!($sth instanceof \ay\pdo\PDO_Statement)) {
-	throw new ErrorException('\ay\pdo\deferred\PDO statement expected to be an instance of \ay\pdo\PDO_Statement.');
+if (!($sth instanceof \gajus\pdo\PDO_Statement)) {
+	throw new ErrorException('\gajus\pdo\deferred\PDO statement expected to be an instance of \gajus\pdo\PDO_Statement.');
 }
 
-if (!($sth instanceof \ay\pdo\log\PDO_Statement)) {
-	throw new ErrorException('\ay\pdo\log\PDO statement expected to be an instance of \ay\pdo\log\PDO_Statement.');
+if (!($sth instanceof \gajus\pdo\log\PDO_Statement)) {
+	throw new ErrorException('\gajus\pdo\log\PDO statement expected to be an instance of \gajus\pdo\log\PDO_Statement.');
 }
 
 if (count($db->getQueryLog()) !== 0) {

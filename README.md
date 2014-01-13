@@ -1,4 +1,4 @@
-## ay\PDO
+## gajus\PDO
 
 Extended PDO with strict-type parameter binding, deffered database connection, query and prepared statement logging (including the parameters used to execute the statement), and debugging features.
 
@@ -18,7 +18,7 @@ $sth->execute();
 $sth->fetch(PDO::FETCH_ASSOC);
 ```
 
-#### The ay\PDO implementation
+#### The gajus\PDO implementation
 
 ```PHP
 $db
@@ -27,18 +27,18 @@ $db
 	->fetch(PDO::FETCH_ASSOC);
 ```
 
-Native PDO implementation returns boolean value indicating either success or failure. `ay\PDO` will return `false` in case of a failure and instance of the `PDOStatement` otherwise.
+Native PDO implementation returns boolean value indicating either success or failure. `gajus\PDO` will return `false` in case of a failure and instance of the `PDOStatement` otherwise.
 
 Instead of using `bindValue` to define the parameter type, you can prefix the placeholder with either parameter type single-character reference, e.g. `i` for integer, `s` for string, etc.
 
-## ay\pdo\log\PDO
+## gajus\pdo\log\PDO
 
-Enables logging of all the queries, including prepared statement and the respective parameters. Queries can be retrieved as an array using ay\PDO `getQueryLog` method.
+Enables logging of all the queries, including prepared statement and the respective parameters. Queries can be retrieved as an array using gajus\PDO `getQueryLog` method.
 
-## ay\pdo\debug\PDO
+## gajus\pdo\debug\PDO
 
-Utilises `ay\pdo\log\PDO` extension to log the queries and MySQL profiling (http://dev.mysql.com/doc/refman/5.5/en/show-profile.html) to produce a breakdown of every query execution time.
+Utilises `gajus\pdo\log\PDO` extension to log the queries and MySQL profiling (http://dev.mysql.com/doc/refman/5.5/en/show-profile.html) to produce a breakdown of every query execution time.
 
-## ay\pdo\deferred\PDO
+## gajus\pdo\deferred\PDO
 
-Used when majority of the requests are handled from the cache-database. `ay\pdo\deferred\PDO` does not establish connection to the database until at least one query is executed.
+Used when majority of the requests are handled from the cache-database. `gajus\pdo\deferred\PDO` does not establish connection to the database until at least one query is executed.

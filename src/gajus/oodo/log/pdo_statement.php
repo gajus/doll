@@ -1,5 +1,5 @@
 <?php
-namespace ay\pdo\log;
+namespace gajus\oodo\log;
 
 class PDO_Statement extends \ay\pdo\PDO_Statement {	
 	public function execute ($parameters = []) {

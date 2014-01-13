@@ -1,13 +1,14 @@
 <?php
-namespace ay\pdo;
+namespace gajus\oodo;
 
 class PDO_Statement extends \PDOStatement {
-	public $dbh,
-		   $placeholder_param_types,
-		   $placeholders;
+	public
+		$dbh,
+		$placeholder_param_types,
+		$placeholders;
 	
-  	protected function __construct(PDO $dbh) {
-  		$this->dbh = $dbh;
+	final protected function __construct(PDO $dbh) {
+		$this->dbh = $dbh;
 	}
 	
 	public function nextRowset() {
@@ -18,7 +19,7 @@ class PDO_Statement extends \PDOStatement {
 		return $this;
 	}
 		
-	public function execute ($parameters = []) {
+	/*public function execute ($parameters = []) {
 		#try {
 			if ($parameters) {
 				#if ($this->queryString === 'INSERT INTO `permission_group_permission` SET `permission_group_id` = ?, `permission_id` = ?;') {
@@ -34,7 +35,7 @@ class PDO_Statement extends \PDOStatement {
 		#}
 
 		return $this;
-	}
+	}*/
 	
 	public function bindValue ($parameter, $value, $data_type = \PDO::PARAM_INT) {
 		parent::bindValue($parameter, $value, $data_type);
