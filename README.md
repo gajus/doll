@@ -22,7 +22,7 @@ Doll does not connect to the database. Instead, it will wait until you use eithe
 
 ## Chaining
 
-[PDOStatement::execute()](http://www.php.net/manual/en/pdostatement.execute.php) returns a boolean value indicating success or failure of the transaction. However, if you are using [PDO::ERRMODE_EXCEPTION](http://uk1.php.net/manual/en/pdo.error-handling.php) error handling stratery (, which you should be using), the output is redundant. Doll returns instance of [PDOStatement](http://php.net/manual/en/class.pdostatement.php) that allows chaining of calls, e.g.
+[PDOStatement::execute()](http://www.php.net/manual/en/pdostatement.execute.php) returns a boolean value indicating success or failure of the transaction. However, if you are using [PDO::ERRMODE_EXCEPTION](http://uk1.php.net/manual/en/pdo.error-handling.php) error handling stratery (, which you should be using.), the output is redundant. Doll returns instance of [PDOStatement](http://php.net/manual/en/class.pdostatement.php) that allows chaining of calls, e.g.
 
 ```php
 $db
@@ -39,13 +39,43 @@ $sth->execute([1]);
 $sth->fetch(PDO::FETCH_COLUMN);
 ```
 
-## Logging
+## Logging & Benchmarking
 
-TBD
+Doll supports query and statement execution logging.
 
-## Debugging
+```
+array(102) {
+  [0]=>
+  array(5) {
+    ["statement"]=>
+    string(23) "SELECT :foo, SLEEP(.2);"
+    ["parameters"]=>
+    array(1) {
+      ["foo"]=>
+      string(1) "a"
+    }
+    ["backtrace"]=>
+    array(5) {
+      ["file"]=>
+      string(58) "/var/www/dev/gajus kuizinas/2014 01 13 doll/test/index.php"
+      ["line"]=>
+      int(28)
+      ["function"]=>
+      string(7) "execute"
+      ["class"]=>
+      string(23) "gajus\doll\PDOStatement"
+      ["type"]=>
+      string(2) "->"
+    }
+    ["duration"]=>
+    float(200157.75)
+    ["query"]=>
+    string(19) "SELECT ?, SLEEP(.2)"
+  }
+}
+```
 
-TBD
+Query execution "duration" and "query" parameters are retrieved using MySQL [SHOW PROFILES](http://dev.mysql.com/doc/refman/5.0/en/show-profiles.html). Doll will automatically run diagnostics every 100 executions to overcome [100 queries limit](http://dev.mysql.com/doc/refman/5.6/en/show-profile.html).
 
 ## Strict-type parameter binding
 
@@ -60,6 +90,11 @@ $db
 
 However, this raised issues with code reusability across projects that don't support this syntax. Furtermore, MySQL itself is fairly good with [type converersion in expression evaluation](http://dev.mysql.com/doc/refman/5.5/en/type-conversion.html).
 
-## gajus\pdo\debug\PDO
+## Watch out
 
-Utilises `gajus\pdo\log\PDO` extension to log the queries and MySQL profiling (http://dev.mysql.com/doc/refman/5.5/en/show-profile.html) to produce a breakdown of every query execution time.
+* Doll defers PDO constructor until first query is executed.
+* Doll constructor will disabled PDO::ATTR_EMULATE_PREPARES.
+* Doll constructor will automatically set PDO::ATTR_ERRMODE to PDO::ERRMODE_EXCEPTION.
+* Doll constructor will automatically set PDO::ATTR_STATEMENT_CLASS to use Doll's PDOStatement extension.
+* Doll's [execute](http://php.net/manual/en/pdostatement.execute.php) method will return instance of [PDOStatement](http://php.net/manual/en/class.pdostatement.php) instead of boolean value.
+* Doll is tested only with MySQL.

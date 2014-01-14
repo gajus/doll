@@ -81,4 +81,6 @@ if ($last_query['statement'] !== $last_query['query']) {
 	throw new \Exception('Log is misalignment.');
 }
 
+bump($log);
+
 echo 'Ok' . PHP_EOL;
