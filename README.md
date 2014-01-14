@@ -20,7 +20,11 @@ Doll does not connect to the database. Instead, it will wait until you use eithe
 * [PDO::rollBack()](http://php.net/manual/en/pdo.rollback.php)
 * [PDOStatement::execute()](http://php.net/manual/en/pdostatement.execute.php)
 
-## Chaining
+## Documentation
+
+Doll is a drop-in replecement for native PDO implementation, though vice-versa does not apply.
+
+### Chaining
 
 [PDOStatement::execute()](http://www.php.net/manual/en/pdostatement.execute.php) returns a boolean value indicating success or failure of the transaction. However, if you are using [PDO::ERRMODE_EXCEPTION](http://uk1.php.net/manual/en/pdo.error-handling.php) error handling stratery (, which you should be using.), the output is redundant. Doll returns instance of [PDOStatement](http://php.net/manual/en/class.pdostatement.php) that allows chaining of calls, e.g.
 
@@ -31,7 +35,7 @@ $db
 	->fetch(PDO::FETCH_COLUMN);
 ```
 
-In case you forgot, native PDO implementation requires you to store the PDOStatement object.
+In case you forgot, native PDO implementation requires you to store the PDOStatement object:
 
 ```php
 $sth = $db->prepare("SELECT ?;");
@@ -39,9 +43,9 @@ $sth->execute([1]);
 $sth->fetch(PDO::FETCH_COLUMN);
 ```
 
-## Logging & Benchmarking
+### Logging & Benchmarking
 
-Doll supports query and statement execution logging.
+Doll supports query and statement execution logging. The following output is produced for every execution:
 
 ```
 array(102) {
@@ -71,7 +75,8 @@ array(102) {
     float(200157.75)
     ["query"]=>
     string(19) "SELECT ?, SLEEP(.2)"
-  }
+  },
+  // [..]
 }
 ```
 
