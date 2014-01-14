@@ -1,44 +1,65 @@
-## gajus\PDO
+# Doll
 
-Extended PDO with strict-type parameter binding, deffered database connection, query and prepared statement logging (including the parameters used to execute the statement), and debugging features.
+Extended PDO with deferred connection, logging of queries and prepared statements (including the statement execution parameters) and benchmarking. Doll [execute](http://php.net/manual/en/pdostatement.execute.php) method returns instance of [PDOStatement](http://php.net/manual/en/class.pdostatement.php) instead of boolean response. There are no other *bells and whistles*.
 
-### Prepared statement chaining and inline strict-type parameter binding
+## Deferred
 
-#### The native PDO implementation
+When you iniate \gajus\doll\PDO instance:
 
-```PHP
-$sth = $db
-	->prepare("SELECT 1 FROM `foo` WHERE `bar_id` = :bar_id AND `baz` = :baz;");
-
-$sth->bindValue('bar_id', 1, PDO::PARAM_INT);
-$sth->bindValue('baz', 'qux');
-
-$sth->execute();
-
-$sth->fetch(PDO::FETCH_ASSOC);
+```php
+$db = new \gajus\doll\PDO('mysql');
 ```
 
-#### The gajus\PDO implementation
+Doll does not connect to the database. Instead, it will wait until you use either of the following methods:
 
-```PHP
+* [PDO::prepare()](http://php.net/manual/en/pdo.prepare.php)
+* [PDO::exec()](http://php.net/manual/en/pdo.exec.php)
+* [PDO::query()](http://php.net/manual/en/pdo.query.php)
+* [PDO::beginTransaction()](http://php.net/manual/en/pdo.begintransaction.php)
+* [PDO::commit()](http://php.net/manual/en/pdo.commit.php)
+* [PDO::rollBack()](http://php.net/manual/en/pdo.rollback.php)
+* [PDOStatement::execute()](http://php.net/manual/en/pdostatement.execute.php)
+
+## Chaining
+
+[PDOStatement::execute()](http://www.php.net/manual/en/pdostatement.execute.php) returns a boolean value indicating success or failure of the transaction. However, if you are using [PDO::ERRMODE_EXCEPTION](http://uk1.php.net/manual/en/pdo.error-handling.php) error handling stratery (, which you should be using), the output is redundant. Doll returns instance of [PDOStatement](http://php.net/manual/en/class.pdostatement.php) that allows chaining of calls, e.g.
+
+```php
 $db
-	->prepare("SELECT 1 FROM `foo` WHERE `bar_id` = i:bar_id AND `baz` = s:baz;")
-	->execute(['bar_id' => 1, 'baz' => 'qux'])
-	->fetch(PDO::FETCH_ASSOC);
+	->prepare("SELECT ?;")
+	->execute([1])
+	->fetch(PDO::FETCH_COLUMN);
 ```
 
-Native PDO implementation returns boolean value indicating either success or failure. `gajus\PDO` will return `false` in case of a failure and instance of the `PDOStatement` otherwise.
+In case you forgot, native PDO implementation requires you to store the PDOStatement object.
 
-Instead of using `bindValue` to define the parameter type, you can prefix the placeholder with either parameter type single-character reference, e.g. `i` for integer, `s` for string, etc.
+```php
+$sth = $db->prepare("SELECT ?;");
+$sth->execute([1]);
+$sth->fetch(PDO::FETCH_COLUMN);
+```
 
-## gajus\pdo\log\PDO
+## Logging
 
-Enables logging of all the queries, including prepared statement and the respective parameters. Queries can be retrieved as an array using gajus\PDO `getQueryLog` method.
+TBD
+
+## Debugging
+
+TBD
+
+## Strict-type parameter binding
+
+Previous Doll implementation (before it had a name), had syntactical sugar allowing to define parameter type while defining a prepared statement, e.g.
+
+```php
+$db
+    ->prepare("SELECT 1 FROM `foo` WHERE `bar_id` = i:bar_id AND `baz` = s:baz;")
+    ->execute(['bar_id' => 1, 'baz' => 'qux'])
+    ->fetch(PDO::FETCH_ASSOC);
+```
+
+However, this raised issues with code reusability across projects that don't support this syntax. Furtermore, MySQL itself is fairly good with [type converersion in expression evaluation](http://dev.mysql.com/doc/refman/5.5/en/type-conversion.html).
 
 ## gajus\pdo\debug\PDO
 
 Utilises `gajus\pdo\log\PDO` extension to log the queries and MySQL profiling (http://dev.mysql.com/doc/refman/5.5/en/show-profile.html) to produce a breakdown of every query execution time.
-
-## gajus\pdo\deferred\PDO
-
-Used when majority of the requests are handled from the cache-database. `gajus\pdo\deferred\PDO` does not establish connection to the database until at least one query is executed.
