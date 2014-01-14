@@ -1,16 +1,16 @@
 # Doll
 
-Extended PDO with deferred connection, logging of queries and prepared statements (including the statement execution parameters) and benchmarking. Doll [execute](http://php.net/manual/en/pdostatement.execute.php) method returns instance of [PDOStatement](http://php.net/manual/en/class.pdostatement.php) instead of boolean response. There are no other *bells and whistles*.
+Extended PDO with deferred connection, logging of queries and prepared statements (including the statement execution parameters) and benchmarking. Doll's `\gajus\doll\PDO::execute()` method returns instance of `\gajus\doll\PDOStatement` instead of boolean response. There are no other *bells and whistles*.
 
 ## Deferred
 
-When you iniate \gajus\doll\PDO instance:
+When you iniate `\gajus\doll\PDO` instance:
 
 ```php
 $db = new \gajus\doll\PDO('mysql');
 ```
 
-Doll does not connect to the database. Instead, it will wait until you use either of the following methods:
+Doll does not connect to the database. Instead, it will wait until you execute either of the following methods (i.e. run a query against the database):
 
 * [PDO::prepare()](http://php.net/manual/en/pdo.prepare.php)
 * [PDO::exec()](http://php.net/manual/en/pdo.exec.php)
@@ -26,7 +26,7 @@ Doll is a drop-in replecement for native PDO implementation, though vice-versa d
 
 ### Chaining
 
-[PDOStatement::execute()](http://www.php.net/manual/en/pdostatement.execute.php) returns a boolean value indicating success or failure of the transaction. However, if you are using [PDO::ERRMODE_EXCEPTION](http://uk1.php.net/manual/en/pdo.error-handling.php) error handling stratery (, which you should be using.), the output is redundant. Doll returns instance of [PDOStatement](http://php.net/manual/en/class.pdostatement.php) that allows chaining of calls, e.g.
+Native [PDOStatement::execute()](http://www.php.net/manual/en/pdostatement.execute.php) returns a boolean value indicating state of the transaction. However, if you are using [PDO::ERRMODE_EXCEPTION](http://uk1.php.net/manual/en/pdo.error-handling.php) error handling stratery (Doll's default), the output is redundant. Doll returns instance of `\gajus\doll\PDOStatement` that allows chaining of calls, e.g.
 
 ```php
 $db
@@ -45,7 +45,9 @@ $sth->fetch(PDO::FETCH_COLUMN);
 
 ### Logging & Benchmarking
 
-Doll supports query and statement execution logging. The following output is produced for every execution:
+Doll supports query and statement execution logging.
+
+The following output is produced for every execution:
 
 ```
 array(102) {
@@ -97,9 +99,9 @@ However, this raised issues with code reusability across projects that don't sup
 
 ## Watch out
 
-* Doll defers PDO constructor until first query is executed.
-* Doll constructor will disabled PDO::ATTR_EMULATE_PREPARES.
-* Doll constructor will automatically set PDO::ATTR_ERRMODE to PDO::ERRMODE_EXCEPTION.
-* Doll constructor will automatically set PDO::ATTR_STATEMENT_CLASS to use Doll's PDOStatement extension.
+* Doll defers PDO constructor until a query is executed against the database.
+* Doll constructor will disabled `PDO::ATTR_EMULATE_PREPARES`.
+* Doll constructor will automatically set `PDO::ATTR_ERRMODE` to `PDO::ERRMODE_EXCEPTION`.
+* Doll constructor will automatically set `PDO::ATTR_STATEMENT_CLASS` to use Doll's PDOStatement extension.
 * Doll's [execute](http://php.net/manual/en/pdostatement.execute.php) method will return instance of [PDOStatement](http://php.net/manual/en/class.pdostatement.php) instead of boolean value.
 * Doll is tested only with MySQL.
