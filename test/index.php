@@ -3,7 +3,7 @@ set_include_path( __DIR__ . '/../src/' );
 
 spl_autoload_register();
 
-$db = new \gajus\doll\PDO('mysql:dbname=test');
+$db = new \gajus\doll\LPDO('mysql:dbname=test');
 
 $sth = $db->prepare("SELECT :foo, SLEEP(.2);");
 
@@ -11,7 +11,9 @@ if (!($sth instanceof \gajus\doll\PDOStatement)) {
 	throw new \Exception('$sth is not instance of \gajus\doll\PDOStatement.');
 }
 
-if (count($db->getLog()) !== 0) {
+$log = $db->getLog();
+
+if (count($log) !== 0) {
 	throw new ErrorException('Log is not empty.');
 }
 
@@ -80,7 +82,5 @@ $last_query = array_pop($log);
 if ($last_query['statement'] !== $last_query['query']) {
 	throw new \Exception('Log is misalignment.');
 }
-
-bump($log);
 
 echo 'Ok' . PHP_EOL;
