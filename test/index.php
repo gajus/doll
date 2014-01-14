@@ -27,8 +27,18 @@ if (count($db->getLog()) !== 0) {
 
 $sth->execute(['foo' => 'a']); $a_statement_execution_line = __LINE__;
 
-if (count($db->getLog()) !== 1) {
-	throw new \Exception('Query Log is expected to have 1 entry.');
+$log = $db->getLog();
+
+if (count($log) !== 1) {
+	throw new \Exception('Log does not have 1 entry.');
+}
+
+if (empty($log[0]['parameters'])) {
+	throw new \Exception('Statement execution parameters are empty.');
+} else if (!isset($log[0]['parameters']['foo'])) {
+	throw new \Exception('Statement execution parameter "foo" is not found.');
+} else if ($log[0]['parameters']['foo'] !== 'a') {
+	throw new \Exception('Statement execution parameter "foo" is not eq. to "a".');
 }
 
 $sth->execute(['foo' => 'b']); $b_statement_execution_line = __LINE__;
@@ -36,7 +46,7 @@ $sth->execute(['foo' => 'b']); $b_statement_execution_line = __LINE__;
 $log = $db->getLog();
 
 if (count($log) !== 2) {
-	throw new \Exception('Log not not have 2 entries.');
+	throw new \Exception('Log does not have 2 entries.');
 }
 
 if ($log[0]['backtrace']['line'] !== $a_statement_execution_line) {
@@ -58,17 +68,17 @@ if ($log[0]['backtrace']['line'] !== $a_statement_execution_line) {
 // Maximum MySQL profilig history size is 100, http://dev.mysql.com/doc/refman/5.6/en/show-profile.html.
 
 for ($i = 0; $i < 100; $i++) {
-	$db->query("SELECT 'a';");
+	$db->query("/* {$i} */ SELECT 'a';");
 }
 
 $db->query("SELECT 'b'");
 
-$summary = $db->getLog();
+$log = $db->getLog();
 
-$last_query = array_pop($summary);
+$last_query = array_pop($log);
 
-if ($last_query['raw_query'] !== $last_query['profile_query']) {
-	throw new \Exception('Query log misalignment.');
+if ($last_query['statement'] !== $last_query['query']) {
+	throw new \Exception('Log is misalignment.');
 }
 
 echo 'Ok' . PHP_EOL;

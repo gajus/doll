@@ -104,9 +104,11 @@ class PDO extends \PDO {
 
 	/**
 	 * This has to be public since it is accessed by the instance of \gajus\doll\PDOStatement.
-	 * 
+	 * @param string $method Method used to execute the query: exec, prepare/execute, query, including beginTransaction, commit and rollBack.
+	 * @param string $statement The query or prepared statement.
+	 * @param array $parameters The parameters used to execute a prepared statement.
 	 */
-	public function on ($method, $statement) {
+	public function on ($method, $statement, array $parameters = []) {
 		if ($this->constructor) {
 			parent::__construct($this->constructor[0], $this->constructor[1], $this->constructor[2], $this->constructor[3]);
 
@@ -125,36 +127,41 @@ class PDO extends \PDO {
 		if ($method !== 'prepare') {
 			$statement = trim(preg_replace('/\s+/', ' ', str_replace("\n", ' ', $statement)));
 			$backtrace = debug_backtrace(\DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1];
-			
+
 			$this->log[] = ['statement' => $statement, 'parameters' => $parameters, 'backtrace' => $backtrace];
 		}
 
 		if ($this->log && count($this->log) % 100 === 0) {
-			$this->addProfileData();
+			$this->applyProfileData();
 		}
 	}
 
-	final private function addProfileData () {
+	/**
+	 * Apply data from "SHOW PROFILES;" to the respective queries in the $log.
+	 *
+	 * @return void
+	 */
+	final private function applyProfileData () {
 		if ($this->constructor) {
 			return;
 		}
 		
 		$queries = parent::query("SHOW PROFILES;")
 			->fetchAll(PDO::FETCH_ASSOC);
-		
+
 		foreach ($queries as $q) {
-			// The original query is executed using parent:: method (therefore not in the log).
+			// The original query is executed using parent:: method (not in the log).
 			if ($q['Query'] === 'SET `profiling_history_size` = 100') {
 				continue;
 			}
 			
 			$this->log[$q['Query_ID'] - 2]['duration'] = 1000000 * $q['Duration'];
-			$this->log[$q['Query_ID'] - 2]['profile_query'] = $q['Query'];
+			$this->log[$q['Query_ID'] - 2]['query'] = $q['Query'];
 		}
 	}
 
 	public function getLog () {
-		$this->addProfileData();
+		$this->applyProfileData();
 
 		return $this->log;
 	}
@@ -163,7 +170,7 @@ class PDO extends \PDO {
 	 * Not implemented.
 	 */
 	public function getQueryLogTable () {
-		$this->addProfileData();
+		$this->applyProfileData();
 		
 		//require_once __DIR__ . '/sql-formatter-master/lib/SqlFormatter.php';
 		

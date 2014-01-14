@@ -2,10 +2,8 @@
 namespace gajus\doll;
 
 class PDOStatement extends \PDOStatement {
-	public
-		$dbh,
-		$placeholder_param_types,
-		$placeholders;
+	private
+		$dbh;
 	
 	final protected function __construct(PDO $dbh) {
 		$this->dbh = $dbh;
@@ -30,10 +28,4 @@ class PDOStatement extends \PDOStatement {
 
 		return $this;
 	}
-	
-	#public function bindValue ($parameter, $value, $data_type = \PDO::PARAM_INT) {
-	#	parent::bindValue($parameter, $value, $data_type);
-	#	
-	#	return $this;
-	#}
 }
