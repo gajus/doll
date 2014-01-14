@@ -3,7 +3,12 @@ set_include_path( __DIR__ . '/../src/' );
 
 spl_autoload_register();
 
-$db = new \gajus\doll\LPDO('mysql:dbname=test');
+$db = new \gajus\doll\PDO('mysql:dbname=test');
+$db->setAttribute(\gajus\doll\PDO::ATTR_LOGGING, true);
+
+if ($db->getAttribute(\gajus\doll\PDO::ATTR_LOGGING) !== true) {
+	throw new \Exception('\gajus\doll\PDO::ATTR_LOGGING database handle attribute is not enabled.');
+}
 
 $sth = $db->prepare("SELECT :foo, SLEEP(.2);");
 

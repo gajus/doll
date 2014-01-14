@@ -45,7 +45,12 @@ $sth->fetch(PDO::FETCH_COLUMN);
 
 ### Logging & Benchmarking
 
-Doll supports query and statement execution logging.
+Doll supports query and statement execution logging. To enable logging, you need to set `\gajus\doll\PDO::ATTR_LOGGING` attribute to `true`.
+
+```php
+$db = new \gajus\doll\PDO('mysql');
+$db->setAttribute(\gajus\doll\PDO::ATTR_LOGGING, true);
+```
 
 The following output is produced for every execution:
 
