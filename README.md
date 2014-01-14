@@ -51,7 +51,7 @@ Doll supports query and statement execution logging. To enable logging, you need
 $db = new \gajus\doll\PDO('mysql');
 $db->setAttribute(\gajus\doll\PDO::ATTR_LOGGING, true);
 
-$sth = $db->prepare("SELECT :foo, SLEEP(.2);");
+$db->prepare("SELECT :foo, SLEEP(.2);")->execute(['foo' => 'a']);
 
 $log = $db->getLog();
 
