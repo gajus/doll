@@ -40,12 +40,12 @@ class PDO extends \PDO {
 		$this->constructor = [$dsn, $username, $password, $driver_options];
 
 		$this->setAttribute(\PDO::ATTR_EMULATE_PREPARES, false);
-		$this->setAttribute(\PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+		$this->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
 		
 		$this->setAttribute(\PDO::ATTR_STATEMENT_CLASS, ['gajus\doll\PDOStatement', [$this]]);
 	}
 
-	private function isInitialized () {
+	public function isInitialized () {
 		return !$this->constructor;
 	}
 
@@ -109,15 +109,8 @@ class PDO extends \PDO {
 		$this->on('query', $statement);
 	
 		$args = func_get_args();
-		$num = func_num_args();
 		
-		if ($num === 1) {
-			return parent::query($statement);
-		} else if ($num === 2) {
-			return parent::query($statement, $args[1]);
-		} else if ($num === 3) {
-			return parent::query($statement, $args[1], $args[2]);
-		}
+		return call_user_func_array(['parent', 'query'], $args);
 	}
 
 	public function beginTransaction () {
@@ -146,21 +139,21 @@ class PDO extends \PDO {
 	 * @param array $parameters The parameters used to execute a prepared statement.
 	 */
 	public function on ($method, $statement, array $parameters = []) {
-		$this->connect();
+        $this->connect();
 
-		if ($this->logging && $method !== 'prepare') {
-			$statement = trim(preg_replace('/\s+/', ' ', str_replace("\n", ' ', $statement)));
-			$backtrace = debug_backtrace(\DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1];
+        if ($method !== 'prepare' && $this->logging) {
+            $statement = trim(preg_replace('/\s+/', ' ', str_replace("\n", ' ', $statement)));
+            $backtrace = debug_backtrace(\DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1];
 
-			$this->log[] = ['statement' => $statement, 'parameters' => $parameters, 'backtrace' => $backtrace];
-		
-			if (count($this->log) % 100 === 0) {
-				$this->applyProfileData();
-			}
-		}
+            $this->log[] = ['statement' => $statement, 'parameters' => $parameters, 'backtrace' => $backtrace];
+        
+            if (count($this->log) % 100 === 0) {
+                $this->applyProfileData();
+            }
+        }
 	}
 
-	final private function connect () {
+	private function connect () {
 		if ($this->isInitialized()) {
 			return;
 		}
@@ -184,8 +177,8 @@ class PDO extends \PDO {
 	 *
 	 * @return void
 	 */
-	final private function applyProfileData () {
-		if (!$this->isInitialized()) {
+	private function applyProfileData () {
+		if (!$this->isInitialized() || !$this->log) {
 			return;
 		}
 		

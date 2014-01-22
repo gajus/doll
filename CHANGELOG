@@ -1,3 +1,8 @@
+0.0.1 / 2014-01-22
+
+* Added unit tests.
+* Integrated with travis (https://travis-ci.org/gajus/doll) and coveralls (https://coveralls.io/r/gajus/doll).
+
 0.0.0 / 2014-01-13
 
 * Starting change log.

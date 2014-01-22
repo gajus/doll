@@ -1,5 +1,8 @@
 # Doll
 
+[![Build Status](https://travis-ci.org/gajus/doll.png?branch=master)](https://travis-ci.org/gajus/doll)
+[![Coverage Status](https://coveralls.io/repos/gajus/doll/badge.png)](https://coveralls.io/r/gajus/doll)
+
 Extended PDO with deferred connection, logging of queries and prepared statements (including the statement execution parameters) and benchmarking. Doll's `\gajus\doll\PDO::execute()` method returns instance of `\gajus\doll\PDOStatement` instead of boolean response. There are no other *bells and whistles*.
 
 ## Deferred
