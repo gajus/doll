@@ -1,9 +1,12 @@
 <?php
 namespace gajus\doll;
 
+/**
+ * @link https://github.com/gajus/doll for the canonical source repository
+ * @copyright Copyright (c) 2013-2014, Anuary (http://anuary.com/)
+ * @license https://github.com/gajus/doll/blob/master/LICENSE BSD 3-Clause
+ */
 class PDO extends \PDO {
-
-	const FETCH_KEY_ASSOC = 'gajus\doll\0';
 	const ATTR_LOGGING = 'gajus\doll\1';
 
 	private
@@ -38,11 +41,6 @@ class PDO extends \PDO {
 	 */
 	public function __construct ($dsn, $username = null, $password = null, array $driver_options = []) {	
 		$this->constructor = [$dsn, $username, $password, $driver_options];
-
-		$this->setAttribute(\PDO::ATTR_EMULATE_PREPARES, false);
-		$this->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
-		
-		$this->setAttribute(\PDO::ATTR_STATEMENT_CLASS, ['gajus\doll\PDOStatement', [$this]]);
 	}
 
 	public function isInitialized () {
@@ -56,6 +54,10 @@ class PDO extends \PDO {
 	 * @param mixed $value
 	 */
 	public function setAttribute ($attribute, $value) {
+		if ($attribute === \PDO::ATTR_ERRMODE) {
+			throw new \InvalidArgumentException('Doll does not allow to change PDO::ATTR_ERRMODE.');
+		}
+
 		if ($attribute === \gajus\doll\PDO::ATTR_LOGGING) {
 			if ($this->isInitialized()) {
 				throw new \RuntimeException('Cannot change logging value after initialization.');
@@ -159,6 +161,10 @@ class PDO extends \PDO {
 		}
 
 		parent::__construct($this->constructor[0], $this->constructor[1], $this->constructor[2], $this->constructor[3]);
+
+		parent::setAttribute(\PDO::ATTR_EMULATE_PREPARES, false);
+		parent::setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
+		parent::setAttribute(\PDO::ATTR_STATEMENT_CLASS, ['gajus\doll\PDOStatement', [$this]]);
 
 		$this->constructor = null;
 
