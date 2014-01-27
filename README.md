@@ -113,7 +113,7 @@ However, this raised issues with code portability across projects that don't sup
 ## Watch out
 
 * Doll defers PDO constructor until a query is executed against the database.
-* Doll constructor will disable `PDO::ATTR_EMULATE_PREPARES`. If you try to change it, Doll will throw an exception.
+* Doll constructor will disable `PDO::ATTR_EMULATE_PREPARES`.
 * Doll constructor will set `PDO::ATTR_ERRMODE` to `PDO::ERRMODE_EXCEPTION`. If you try to change it, Doll will throw an exception.
 * Doll constructor will set `PDO::ATTR_STATEMENT_CLASS` to use Doll's PDOStatement extension.
 * Doll's [execute](http://php.net/manual/en/pdostatement.execute.php) method will return instance of [PDOStatement](http://php.net/manual/en/class.pdostatement.php) instead of boolean value.
