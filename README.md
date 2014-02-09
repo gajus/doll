@@ -3,14 +3,14 @@
 [![Build Status](https://travis-ci.org/gajus/doll.png?branch=master)](https://travis-ci.org/gajus/doll)
 [![Coverage Status](https://coveralls.io/repos/gajus/doll/badge.png)](https://coveralls.io/r/gajus/doll)
 
-Extended PDO with deferred connection, logging of queries and prepared statements (including the statement execution parameters) and benchmarking. Doll's `\gajus\doll\PDO::execute()` method returns instance of `\gajus\doll\PDOStatement` instead of boolean response. There are no other *bells and whistles*.
+Extended PDO with deferred connection, logging of queries and prepared statements (including the statement execution parameters) and benchmarking. Doll's `\Gajus\Doll\PDO::execute()` method returns instance of `\Gajus\Doll\PDOStatement` instead of boolean response. There are no other *bells and whistles*.
 
 ## Deferred
 
-When you iniate `\gajus\doll\PDO` instance:
+When you iniate `\Gajus\Doll\PDO` instance:
 
 ```php
-$db = new \gajus\doll\PDO('mysql');
+$db = new \Gajus\Doll\PDO('mysql');
 ```
 
 Doll does not connect to the database. Instead, it will wait until you execute either of the following methods (i.e. run a query against the database):
@@ -29,7 +29,7 @@ Doll is a drop-in replecement for native PDO implementation, though vice-versa d
 
 ### Chaining
 
-Native [PDOStatement::execute()](http://www.php.net/manual/en/pdostatement.execute.php) returns a boolean value indicating state of the transaction. However, if you are using [PDO::ERRMODE_EXCEPTION](http://uk1.php.net/manual/en/pdo.error-handling.php) error handling strategy (Doll's default), the output is redundant. Doll returns instance of `\gajus\doll\PDOStatement` that allows chaining of calls, e.g.
+Native [PDOStatement::execute()](http://www.php.net/manual/en/pdostatement.execute.php) returns a boolean value indicating state of the transaction. However, if you are using [PDO::ERRMODE_EXCEPTION](http://uk1.php.net/manual/en/pdo.error-handling.php) error handling strategy (Doll's default), the output is redundant. Doll returns instance of `\Gajus\Doll\PDOStatement` that allows chaining of calls, e.g.
 
 ```php
 $input = $db
@@ -48,11 +48,11 @@ $input = $sth->fetch(PDO::FETCH_COLUMN);
 
 ### Logging & Benchmarking
 
-Doll supports query and statement execution logging. To enable logging, you need to set `\gajus\doll\PDO::ATTR_LOGGING` attribute to `true`.
+Doll supports query and statement execution logging. To enable logging, you need to set `\Gajus\Doll\PDO::ATTR_LOGGING` attribute to `true`.
 
 ```php
-$db = new \gajus\doll\PDO('mysql');
-$db->setAttribute(\gajus\doll\PDO::ATTR_LOGGING, true);
+$db = new \Gajus\Doll\PDO('mysql');
+$db->setAttribute(\Gajus\Doll\PDO::ATTR_LOGGING, true);
 
 $db->prepare("SELECT :foo, SLEEP(.2)")->execute(['foo' => 'a']);
 
@@ -83,7 +83,7 @@ array(1) {
       ["function"]=>
       string(7) "execute"
       ["class"]=>
-      string(23) "gajus\doll\PDOStatement"
+      string(23) "Gajus\Doll\PDOStatement"
       ["type"]=>
       string(2) "->"
     }
