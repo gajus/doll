@@ -1,9 +1,8 @@
 <?php
-namespace gajus\doll;
+namespace Gajus\Doll;
 
 /**
  * @link https://github.com/gajus/doll for the canonical source repository
- * @copyright Copyright (c) 2013-2014, Anuary (http://anuary.com/)
  * @license https://github.com/gajus/doll/blob/master/LICENSE BSD 3-Clause
  */
 class PDO extends \PDO {
@@ -55,16 +54,16 @@ class PDO extends \PDO {
 	 */
 	public function setAttribute ($attribute, $value) {
 		if ($attribute === \PDO::ATTR_ERRMODE) {
-			throw new \InvalidArgumentException('Doll does not allow to change PDO::ATTR_ERRMODE.');
+			throw new Exception\InvalidArgumentException('Doll does not allow to change PDO::ATTR_ERRMODE.');
 		}
 
 		if ($attribute === \gajus\doll\PDO::ATTR_LOGGING) {
 			if ($this->isInitialized()) {
-				throw new \RuntimeException('Cannot change logging value after initialization.');
+				throw new Exception\RuntimeException('Cannot change logging value after initialization.');
 			}
 
 			if (!is_bool($value)) {
-				throw new \InvalidArgumentException('Parameter value is not boolean.');
+				throw new Exception\InvalidArgumentException('Parameter value is not boolean.');
 			}
 
 			$this->logging = $value;
@@ -164,7 +163,7 @@ class PDO extends \PDO {
 
 		parent::setAttribute(\PDO::ATTR_EMULATE_PREPARES, false);
 		parent::setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
-		parent::setAttribute(\PDO::ATTR_STATEMENT_CLASS, ['gajus\doll\PDOStatement', [$this]]);
+		parent::setAttribute(\PDO::ATTR_STATEMENT_CLASS, ['Gajus\Doll\PDOStatement', [$this]]);
 
 		$this->constructor = null;
 

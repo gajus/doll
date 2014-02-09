@@ -1,19 +1,19 @@
 <?php
 class LogTest extends PHPUnit_Framework_TestCase {
     public function testDefaultToNoLogging () {
-        $db = new \gajus\doll\PDO('mysql:dbname=test');
-        $this->assertFalse($db->getAttribute(\gajus\doll\PDO::ATTR_LOGGING));
+        $db = new \Gajus\Doll\PDO('mysql:dbname=test');
+        $this->assertFalse($db->getAttribute(\Gajus\Doll\PDO::ATTR_LOGGING));
     }
 
     public function testEnableLogging () {
-        $db = new \gajus\doll\PDO('mysql:dbname=test');
-        $db->setAttribute(\gajus\doll\PDO::ATTR_LOGGING, true);
-        $this->assertTrue($db->getAttribute(\gajus\doll\PDO::ATTR_LOGGING));
+        $db = new \Gajus\Doll\PDO('mysql:dbname=test');
+        $db->setAttribute(\Gajus\Doll\PDO::ATTR_LOGGING, true);
+        $this->assertTrue($db->getAttribute(\Gajus\Doll\PDO::ATTR_LOGGING));
     }
 
     public function testLogEachStatementExecution () {
-        $db = new \gajus\doll\PDO('mysql:dbname=test');
-        $db->setAttribute(\gajus\doll\PDO::ATTR_LOGGING, true);
+        $db = new \Gajus\Doll\PDO('mysql:dbname=test');
+        $db->setAttribute(\Gajus\Doll\PDO::ATTR_LOGGING, true);
 
         $sth = $db->prepare("SELECT 1;");
         $sth->execute();
@@ -25,7 +25,7 @@ class LogTest extends PHPUnit_Framework_TestCase {
     }
 
     public function testDoNotLogStatementExecutionWhenLoggingIsNotEnabled () {
-        $db = new \gajus\doll\PDO('mysql:dbname=test');
+        $db = new \Gajus\Doll\PDO('mysql:dbname=test');
         $sth = $db->prepare("SELECT 1;");
         $sth->execute();
         $sth->execute();
@@ -36,14 +36,14 @@ class LogTest extends PHPUnit_Framework_TestCase {
     }
 
     public function testDoNotLogNotExecutedStatement () {
-        $db = new \gajus\doll\PDO('mysql:dbname=test');
+        $db = new \Gajus\Doll\PDO('mysql:dbname=test');
         $sth = $db->prepare("SELECT 1;");
         $this->assertCount(0, $db->getLog());
     }
 
     public function testExecutedStatementBacktraceAlignment () {
-        $db = new \gajus\doll\PDO('mysql:dbname=test');
-        $db->setAttribute(\gajus\doll\PDO::ATTR_LOGGING, true);
+        $db = new \Gajus\Doll\PDO('mysql:dbname=test');
+        $db->setAttribute(\Gajus\Doll\PDO::ATTR_LOGGING, true);
 
         $sth = $db->prepare("SELECT 1;");
 
@@ -56,8 +56,8 @@ class LogTest extends PHPUnit_Framework_TestCase {
     }
 
     public function testExecutedStatementParameterLogging () {
-        $db = new \gajus\doll\PDO('mysql:dbname=test');
-        $db->setAttribute(\gajus\doll\PDO::ATTR_LOGGING, true);
+        $db = new \Gajus\Doll\PDO('mysql:dbname=test');
+        $db->setAttribute(\Gajus\Doll\PDO::ATTR_LOGGING, true);
 
         $sth = $db->prepare("SELECT :foo;");
         $sth->execute(['foo' => 1]);
@@ -69,8 +69,8 @@ class LogTest extends PHPUnit_Framework_TestCase {
     }
 
     public function testExecutedStatementLogAlignmentWithProfiles () {
-        $db = new \gajus\doll\PDO('mysql:dbname=test');
-        $db->setAttribute(\gajus\doll\PDO::ATTR_LOGGING, true);
+        $db = new \Gajus\Doll\PDO('mysql:dbname=test');
+        $db->setAttribute(\Gajus\Doll\PDO::ATTR_LOGGING, true);
 
         for ($i = 0; $i < 200; $i++) {
             $db->query("/* {$i} */ SELECT 'a'");
@@ -84,8 +84,8 @@ class LogTest extends PHPUnit_Framework_TestCase {
     }
 
     public function testStatementExecutionTimeTracking () {
-        $db = new \gajus\doll\PDO('mysql:dbname=test');
-        $db->setAttribute(\gajus\doll\PDO::ATTR_LOGGING, true);
+        $db = new \Gajus\Doll\PDO('mysql:dbname=test');
+        $db->setAttribute(\Gajus\Doll\PDO::ATTR_LOGGING, true);
 
         $db->query("SELECT SLEEP(.2)");
 

@@ -1,13 +1,13 @@
 <?php
 class DeferredConnectionTest extends PHPUnit_Framework_TestCase {
     public function testDeferredConnectionNotConnectedUponConstruction () {
-        $db = new \gajus\doll\PDO('mysql:dbname=test');
+        $db = new \Gajus\Doll\PDO('mysql:dbname=test');
 
         $this->assertFalse($db->isInitialized());
     }
 
     /*public function testDeferredConnectionNotConnectedAfterStatement () {
-        $db = new \gajus\doll\PDO('mysql:dbname=test');
+        $db = new \Gajus\Doll\PDO('mysql:dbname=test');
 
         $db->prepare("SELECT 1;");
 
@@ -15,7 +15,7 @@ class DeferredConnectionTest extends PHPUnit_Framework_TestCase {
     }*/
 
     public function testConnectedAfterStatementExecution () {
-        $db = new \gajus\doll\PDO('mysql:dbname=test');
+        $db = new \Gajus\Doll\PDO('mysql:dbname=test');
 
         $sth = $db->prepare("SELECT 1;");
         $sth->execute();
@@ -24,7 +24,7 @@ class DeferredConnectionTest extends PHPUnit_Framework_TestCase {
     }
 
     public function testConnectedAfterQuery () {
-        $db = new \gajus\doll\PDO('mysql:dbname=test');
+        $db = new \Gajus\Doll\PDO('mysql:dbname=test');
 
         $db->query("SELECT 1;");
 
@@ -32,7 +32,7 @@ class DeferredConnectionTest extends PHPUnit_Framework_TestCase {
     }
 
     public function testConnectedAfterExec () {
-        $db = new \gajus\doll\PDO('mysql:dbname=test');
+        $db = new \Gajus\Doll\PDO('mysql:dbname=test');
 
         $db->exec("SELECT 1;");
 
@@ -40,7 +40,7 @@ class DeferredConnectionTest extends PHPUnit_Framework_TestCase {
     }
 
     public function testConnectedAfterBeginTransaction () {
-        $db = new \gajus\doll\PDO('mysql:dbname=test');
+        $db = new \Gajus\Doll\PDO('mysql:dbname=test');
 
         $db->beginTransaction();
 
