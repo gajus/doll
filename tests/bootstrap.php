@@ -1,3 +1,3 @@
 <?php
-require __DIR__ . '/../src/pdo.php';
-require __DIR__ . '/../src/pdostatement.php';
+require __DIR__ . '/../src/PDO.php';
+require __DIR__ . '/../src/PDOStatement.php';
