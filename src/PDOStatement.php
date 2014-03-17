@@ -36,7 +36,6 @@ class PDOStatement extends \PDOStatement {
 
 			if ($error[0] === 'HY093') {
 				// For some odd reason PDO does no throw Exception in this case.
-				// @todo Cover with unit tests.
 				// @see http://www.php.net/manual/en/pdostatement.execute.php
 				throw new Exception\InvalidArgumentException('You cannot bind multiple values to a single parameter. You cannot bind more values than specified.');
 			} else {
