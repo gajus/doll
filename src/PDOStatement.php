@@ -25,11 +25,7 @@ class PDOStatement extends \PDOStatement {
 	 * @return PDOStatement
 	 */
 	public function execute ($parameters = []) {
-		if ($parameters) {
-			$execute = parent::execute($parameters);
-		} else {
-			$execute = parent::execute();
-		}
+		$execute = parent::execute($parameters);
 
 		if ($execute === false) {
 			$error = $this->errorInfo();
