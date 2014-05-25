@@ -29,15 +29,34 @@ Doll does not connect to the database. Instead, it will wait until you execute e
 
 Doll is a drop-in replecement for native PDO implementation, though vice-versa does not stand.
 
+### Instantiating
+
+[PDO::__construct](http://uk3.php.net/manual/en/pdo.construct.php) is using Data Source Name (DSN) to describe a connection to the data source. However, native PDO implementation separated out username, password and driver options into separate parameters. In practise, this makes sharing configuration cumbersome. As such, Doll opted to use a single array to describe connection:
+
+```php
+[
+    'host' => '127.0.0.1',
+    'driver' => 'mysql',
+    'database' => null,
+    'username' => null,
+    'password' => null,
+    'charset' => 'utf8',
+    'collation' => 'utf8_general_ci',
+    'driver_options' => []
+]
+```
+
+#
+
 ### Chaining
 
 Native [PDOStatement::execute()](http://www.php.net/manual/en/pdostatement.execute.php) returns a boolean value indicating state of the transaction. However, if you are using [PDO::ERRMODE_EXCEPTION](http://uk1.php.net/manual/en/pdo.error-handling.php) error handling strategy (Doll's default), the output is redundant. Doll returns instance of `\Gajus\Doll\PDOStatement` that allows chaining of calls, e.g.
 
 ```php
 $input = $db
-	->prepare("SELECT ?")
-	->execute([1])
-	->fetch(PDO::FETCH_COLUMN);
+    ->prepare("SELECT ?")
+    ->execute([1])
+    ->fetch(PDO::FETCH_COLUMN);
 ```
 
 In case you forgot, native PDO implementation requires you to store the PDOStatement object:
@@ -111,6 +130,10 @@ $db
 ```
 
 However, this raised issues with code portability across projects that don't support this syntax. MySQL itself is fairly good with [type converersion in expression evaluation](http://dev.mysql.com/doc/refman/5.5/en/type-conversion.html).
+
+## Logging
+
+Doll used to implement logging
 
 ## Watch out
 

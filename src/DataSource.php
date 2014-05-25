@@ -5,17 +5,17 @@ namespace Gajus\Doll;
  * @link https://github.com/gajus/doll for the canonical source repository
  * @license https://github.com/gajus/doll/blob/master/LICENSE BSD 3-Clause
  */
-class DSNConstructor {
+class DataSource {
     static private
         /**
          * @var array
          */
-        $default_database_source = [
+        $default_data_source = [
             'host' => null,
             'port' => null,
             'unix_socket' => null,
             'driver' => 'mysql',
-            'database_name' => null,
+            'database' => null,
             'username' => null,
             'password' => null,
             'charset' => 'utf8',
@@ -27,29 +27,29 @@ class DSNConstructor {
         /**
          * @var array
          */
-        $database_source = [];
+        $data_source = [];
 
     /** 
-     * @param array $database_source
+     * @param array $data_source
      */
-    public function __construct (array $database_source = []) {
-        if (array_diff_key($database_source, static::$default_database_source)) {
+    public function __construct (array $data_source = []) {
+        if (array_diff_key($data_source, static::$default_data_source)) {
             throw new Exception\InvalidArgumentException('Unrecognized database source parameter.');
         }
 
-        $this->database_source = $database_source + array_filter(static::$default_database_source);
+        $this->data_source = $data_source + array_filter(static::$default_data_source);
 
-        if (isset($this->database_source['host'], $this->database_source['unix_socket'])) {
+        if (isset($this->data_source['host'], $this->data_source['unix_socket'])) {
             throw new Exception\LogicException('"host" and "unix_socket" database source parameters cannot be used together.');
         }
 
-        if (!isset($this->database_source['host']) && isset($this->database_source['port'])) {
+        if (!isset($this->data_source['host']) && isset($this->data_source['port'])) {
             throw new Exception\LogicException('"port" database source parameter cannot be used without "host".');
         }
     }
 
     /**
-     * Constructor parameters and generate the connection string.
+     * Generate the connection string.
      * 
      * @return string
      */
@@ -60,38 +60,52 @@ class DSNConstructor {
         $map = [
             'host' => 'host',
             'port' => 'port',
-            'dbname' => 'database_name',
+            'dbname' => 'database',
             'unix_socket' => 'unix_socket',
             'charset' => 'charset'
         ];
 
         foreach ($map as $dsn_name => $data_source_parameter_name) {
-            if (isset($this->database_source[$data_source_parameter_name])) {
-                $dsn[] = $dsn_name . '=' . $this->database_source[$data_source_parameter_name];
+            if (isset($this->data_source[$data_source_parameter_name])) {
+                $dsn[] = $dsn_name . '=' . $this->data_source[$data_source_parameter_name];
             }
         }
 
         if ($dsn) {
-            $dsn = $this->database_source['driver'] . ':' . implode(';', $dsn);
+            $dsn = $this->data_source['driver'] . ':' . implode(';', $dsn);
         } else {
-            $dsn = $this->database_source['driver'];
+            $dsn = $this->data_source['driver'];
         }
 
         return $dsn;
     }
 
+    /**
+     * @return null|string
+     */
     public function getUsername () {
-        return isset($this->database_source['username']) ? $this->database_source['username'] : null;
+        return isset($this->data_source['username']) ? $this->data_source['username'] : null;
     }
 
+    /**
+     * @array null|string
+     */
     public function getPassword () {
-        return isset($this->database_source['password']) ? $this->database_source['password'] : null;
+        return isset($this->data_source['password']) ? $this->data_source['password'] : null;
     }
 
+    /**
+     * @return array
+     */
     public function getDriverOptions () {
-        return isset($this->database_source['driver_options']) ? $this->database_source['driver_options'] : [];
+        return isset($this->data_source['driver_options']) ? $this->data_source['driver_options'] : [];
     }
 
-    #public function createConnection () {
-    #}
+    /**
+     * @param string $pdo_class Name of the PDO class.
+     * @return Gajus\Doll\PDO
+     */
+    public function constructPDO ($pdo_class = 'Gajus\Doll\PDO') {
+        return new $pdo_class ($this->getDSN(), $this->getUsername(), $this->getPassword(), $this->getDriverOptions());
+    }
 }

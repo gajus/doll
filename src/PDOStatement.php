@@ -6,41 +6,70 @@ namespace Gajus\Doll;
  * @license https://github.com/gajus/doll/blob/master/LICENSE BSD 3-Clause
  */
 class PDOStatement extends \PDOStatement {
-	private
-		$dbh;
-	
-	final protected function __construct(PDO $dbh) {
-		$this->dbh = $dbh;
-	}
-	
-	public function nextRowset() {
- 		if (!parent::nextRowset()) {
-			throw new Exception\RuntimeException('Rowset is not available.');
-		}
-		
-		return $this;
-	}
+    private
+        /**
+         * @var PDO
+         */
+        $dbh,
+        /**
+         * @var array
+         */
+        $placeholders,
+        /**
+         * @var array
+         */
+        $placeholder_param_types;
+    
+    /**
+     * @param PDO $dbh
+     */
+    final protected function __construct(PDO $dbh) {
+        $this->dbh = $dbh;
+    }
 
-	/**
-	 * @return PDOStatement
-	 */
-	public function execute ($parameters = []) {
-		$execute = parent::execute($parameters);
+    /**
+     * @return null
+     */
+    public function setPlaceholders (array $placeholders, array $placeholder_param_types) {
+        if ($this->placeholders !== null) {
+            throw new Exception\LogicException('Placeholders can be set only at the time of building the statement.');
+        }
 
-		if ($execute === false) {
-			$error = $this->errorInfo();
+        $this->placeholders = $placeholders;
+        $this->placeholder_param_types = $placeholder_param_types;
+    }
+    
+    /**
+     * @return $this
+     */
+    public function nextRowset() {
+         if (!parent::nextRowset()) {
+            throw new Exception\RuntimeException('Rowset is not available.');
+        }
+        
+        return $this;
+    }
 
-			if ($error[0] === 'HY093') {
-				// For some odd reason PDO does no throw Exception in this case.
-				// @see http://www.php.net/manual/en/pdostatement.execute.php
-				throw new Exception\InvalidArgumentException('You cannot bind multiple values to a single parameter. You cannot bind more values than specified.');
-			} else {
-				throw new Exception\RuntimeException('Oops. Something gone terribly wrong.');
-			}
-		}
+    /**
+     * @return $this
+     */
+    public function execute ($parameters = []) {
+        $execute = parent::execute($parameters);
 
-		$this->dbh->on('execute', $this->queryString, $parameters);
+        if ($execute === false) {
+            $error = $this->errorInfo();
 
-		return $this;
-	}
+            if ($error[0] === 'HY093') {
+                // For some odd reason PDO does no throw Exception in this case.
+                // @see http://www.php.net/manual/en/pdostatement.execute.php
+                throw new Exception\InvalidArgumentException('You cannot bind multiple values to a single parameter. You cannot bind more values than specified.');
+            } else {
+                throw new Exception\RuntimeException('Oops. Something gone terribly wrong.');
+            }
+        }
+
+        $this->dbh->on('execute', $this->queryString, $parameters);
+
+        return $this;
+    }
 }

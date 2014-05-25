@@ -6,204 +6,260 @@ namespace Gajus\Doll;
  * @license https://github.com/gajus/doll/blob/master/LICENSE BSD 3-Clause
  */
 class PDO extends \PDO {
-	const ATTR_LOGGING = 'gajus\doll\1';
+    const ATTR_LOGGING = 'Gajus\Doll\1';
 
-	private
-		/**
-		 * Initial constructor parameters used to instantiate \PDO upon the first query.
-		 *
-		 * @param array
-		 */
-		$constructor = [],
-		/**
-		 * Database handle attributes that were set using setAttribute before
-		 * PDO is constructed. 
-		 * 
-		 * @param array
-		 */
-		$attributes = [],
-		/**
-		 * Queries executed using exec, prepare/execute, query, including beginTransaction,
-		 * commit and rollBack.
-		 * 
-		 * @param array
-		 */
-		$log = [],
-		/**
-		 * @param boolean
-		 */
-		$logging = false;
+    private
+        /**
+         * @var boolean
+         */
+        $is_connected = false,
+        /**
+         * @var DataSource
+         */
+        $data_source,
+        /**
+         * Database attributes that were set before database connection is established.
+         * 
+         * @var array
+         */
+        $attributes = [],
+        /**
+         * @var boolean
+         */
+        $logging = false,
+        /**
+         * @var array
+         */
+        $log = [];
 
-	/**
-	 * Constructur will change the error handling scenario to PDO::ERRMODE_EXCEPTION,
-	 * disable emulated queries and set PDO::ATTR_STATEMENT_CLASS to \gajus\doll\PDOStatement.
-	 */
-	public function __construct ($dsn, $username = null, $password = null, array $driver_options = []) {	
-		$this->constructor = [$dsn, $username, $password, $driver_options];
-	}
+    /**
+     * The constructor does not 
+     * 
+     * @param array $constructor
+     */
+    public function __construct (array $data_source = []) {
+        $this->data_source = new \Gajus\Doll\DataSource($data_source);
+    }
 
-	public function isInitialized () {
-		return !$this->constructor;
-	}
+    /**
+     * @return boolean Indicates whether PDO has connected to the database.
+     */
+    public function isConnected () {
+        return $this->is_connected;
+    }
 
-	/**
-	 * Logs database handle attributes that are set before PDO is constructed.
-	 * 
-	 * @param string $attribute
-	 * @param mixed $value
-	 */
-	public function setAttribute ($attribute, $value) {
-		if ($attribute === \PDO::ATTR_ERRMODE) {
-			throw new Exception\InvalidArgumentException('Doll does not allow to change PDO::ATTR_ERRMODE.');
-		}
+    /**
+     * Logs database handle attributes that are set before PDO is constructed.
+     * 
+     * @param string $attribute
+     * @param mixed $value
+     */
+    public function setAttribute ($attribute, $value) {
+        if ($attribute === \PDO::ATTR_ERRMODE) {
+            throw new Exception\InvalidArgumentException('Doll does not allow to change PDO::ATTR_ERRMODE.');
+        }
 
-		if ($attribute === \gajus\doll\PDO::ATTR_LOGGING) {
-			if ($this->isInitialized()) {
-				throw new Exception\RuntimeException('Cannot change logging value after initialization.');
-			}
+        if ($attribute === \Gajus\Doll\PDO::ATTR_LOGGING) {
+            if ($this->isConnected()) {
+                throw new Exception\RuntimeException('Cannot change Gajus\Doll\PDO::ATTR_LOGGING value after connection is established.');
+            }
 
-			if (!is_bool($value)) {
-				throw new Exception\InvalidArgumentException('Parameter value is not boolean.');
-			}
+            if (!is_bool($value)) {
+                throw new Exception\InvalidArgumentException('Parameter value is not boolean.');
+            }
 
-			$this->logging = $value;
+            $this->logging = $value;
 
-			return;
-		}
+            return;
+        }
 
-		if (!$this->isInitialized()) {
-			$this->attributes[$attribute] = $value;
-		} else {
-			parent::setAttribute($attribute, $value);
-		}
-	}
+        if (!$this->isConnected()) {
+            $this->attributes[$attribute] = $value;
+        } else {
+            parent::setAttribute($attribute, $value);
+        }
+    }
 
-	public function getAttribute ($attribute) {
-		if ($attribute === \gajus\doll\PDO::ATTR_LOGGING) {
-			return $this->logging;
-		}
+    /**
+     * @param int $attribute
+     * @return mixed
+     */
+    public function getAttribute ($attribute) {
+        if ($attribute === \gajus\doll\PDO::ATTR_LOGGING) {
+            return $this->logging;
+        }
 
-		$this->connect();
+        $this->connect();
 
-		return parent::getAttribute($attribute);
-	}
+        return parent::getAttribute($attribute);
+    }
 
-	public function prepare ($statement, $driver_options = []) {
-		$this->on('prepare', $statement);
-		
-		return parent::prepare($statement, $driver_options);
-	}
+    /**
+     * @param string $statement
+     * @param array $driver_options
+     * @return Gajus\Doll\PDOStatement
+     */
+    public function prepare ($statement, $driver_options = []) {
+        $this->on('prepare', $statement);
 
-	public function exec ($statement) {
-		$this->on('exec', $statement);
-	
-		return parent::exec($statement);
-	}
+        $param_types = [
+            'b' => \PDO::PARAM_BOOL,
+            'n' => \PDO::PARAM_NULL,
+            'i' => \PDO::PARAM_INT,
+            's' => \PDO::PARAM_STR,
+            'l' => \PDO::PARAM_LOB
+        ];
 
-	/**
-	 * The implementation might seem odd, though the benchmark (PHP 5.4) shows
-	 * that such implementation is noticeably faster than using call_user_func_array.
-	 *
-	 * Method [ <internal:PDO> public method query ] {}
-	 */
-	public function query ($statement) {
-		$this->on('query', $statement);
-	
-		$args = func_get_args();
-		
-		return call_user_func_array(['parent', 'query'], $args);
-	}
+        $placeholder_param_types = [];
+        $placeholders = [];
+        
+        $query = preg_replace_callback('/([bnisl])\:(\w+)/', function ($b) use ($param_types, &$placeholder_param_types, &$placeholders) {
+            $placeholder_param_types[$b[2]] = $param_types[$b[1]];
 
-	public function beginTransaction () {
-		$this->on('beginTransaction', 'START TRANSACTION');
-	
-		return parent::beginTransaction();
-	}
-	
-	public function commit () {
-		$this->on('commit', 'COMMIT');
-		
-		return parent::commit();
-	}
-	
-	public function rollBack () {
-		$this->on('rollBack', 'ROLLBACK');
-	
-		return parent::rollBack();
-	}
+            $placeholders[] = $b[2];
 
-	/**
-	 * This has to be public since it is accessed by the instance of \gajus\doll\PDOStatement.
-	 *
-	 * @param string $method Method used to execute the query: exec, prepare/execute, query, including beginTransaction, commit and rollBack.
-	 * @param string $statement The query or prepared statement.
-	 * @param array $parameters The parameters used to execute a prepared statement.
-	 */
-	public function on ($method, $statement, array $parameters = []) {
+            return '?';
+        }, $statement);
+
+        $statement = parent::prepare($query, $driver_options);
+        $statement->setPlaceholders($placeholders, $placeholder_param_types);
+
+        return $statement;
+    }
+
+    public function exec ($statement) {
+        $this->on('exec', $statement);
+    
+        return parent::exec($statement);
+    }
+
+    /**
+     * The implementation might seem odd, though the benchmark (PHP 5.4) shows
+     * that such implementation is noticeably faster than using call_user_func_array.
+     *
+     * Method [ <internal:PDO> public method query ] {}
+     */
+    public function query ($statement) {
+        $this->on('query', $statement);
+    
+        $args = func_get_args();
+        
+        return call_user_func_array(['parent', 'query'], $args);
+    }
+
+    public function beginTransaction () {
+        $this->on('beginTransaction', 'START TRANSACTION');
+    
+        return parent::beginTransaction();
+    }
+    
+    public function commit () {
+        $this->on('commit', 'COMMIT');
+        
+        return parent::commit();
+    }
+        
+    /**
+     * @return bool
+     */
+    public function rollBack () {
+        $this->on('rollBack', 'ROLLBACK');
+    
+        return parent::rollBack();
+    }
+
+    /**
+     * This has to be public since it is accessed by the instance of \gajus\doll\PDOStatement.
+     *
+     * @param string $method Method used to execute the query: exec, prepare/execute, query, including beginTransaction, commit and rollBack.
+     * @param string $statement The query or prepared statement.
+     * @param array $parameters The parameters used to execute a prepared statement.
+     * @return null
+     */
+    public function on ($method, $statement, array $parameters = []) {
         $this->connect();
 
         if ($method !== 'prepare' && $this->logging) {
             $statement = trim(preg_replace('/\s+/', ' ', str_replace("\n", ' ', $statement)));
             $backtrace = debug_backtrace(\DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1];
 
-            $this->log[] = ['statement' => $statement, 'parameters' => $parameters, 'backtrace' => $backtrace];
+            $this->log[] = [
+                'statement' => $statement,
+                'parameters' => $parameters,
+                'backtrace' => $backtrace
+            ];
         
             if (count($this->log) % 100 === 0) {
                 $this->applyProfileData();
             }
         }
-	}
+    }
 
-	private function connect () {
-		if ($this->isInitialized()) {
-			return;
-		}
+    /**
+     * Connect to the database using the constructor parameter and attributes
+     * that were collected prior to triggering connection to the database.
+     * 
+     * @return null
+     */
+    private function connect () {
+        if ($this->isConnected()) {
+            return;
+        }
 
-		parent::__construct($this->constructor[0], $this->constructor[1], $this->constructor[2], $this->constructor[3]);
+        parent::__construct(
+            $this->data_source->getDSN(),
+            $this->data_source->getUsername(),
+            $this->data_source->getPassword(),
+            $this->data_source->getDriverOptions()
+        );
 
-		parent::setAttribute(\PDO::ATTR_EMULATE_PREPARES, false);
-		parent::setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
-		parent::setAttribute(\PDO::ATTR_STATEMENT_CLASS, ['Gajus\Doll\PDOStatement', [$this]]);
+        parent::setAttribute(\PDO::ATTR_STRINGIFY_FETCHES, false);
+        parent::setAttribute(\PDO::ATTR_EMULATE_PREPARES, false);
+        parent::setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
+        parent::setAttribute(\PDO::ATTR_STATEMENT_CLASS, ['Gajus\Doll\PDOStatement', [$this]]);
 
-		$this->constructor = null;
+        $this->is_connected = true;
 
-		foreach ($this->attributes as $attribute => $value) {
-			$this->setAttribute($attribute, $value);
-		}
-		
-		$this->attributes = null;
+        foreach ($this->attributes as $attribute => $value) {
+            $this->setAttribute($attribute, $value);
+        }
 
-		parent::exec("SET `profiling` = 1;");
-		parent::exec("SET `profiling_history_size` = 100;");
-	}
+        if ($this->logging) {
+            parent::exec('SET `profiling` = 1');
+            parent::exec('SET `profiling_history_size` = 100');
+        }
+    }
 
-	/**
-	 * Apply data from "SHOW PROFILES;" to the respective queries in the $log.
-	 *
-	 * @return void
-	 */
-	private function applyProfileData () {
-		if (!$this->isInitialized() || !$this->log) {
-			return;
-		}
-		
-		$queries = \PDO::query("SHOW PROFILES;")
-			->fetchAll(PDO::FETCH_ASSOC);
+    /**
+     * Apply data from "SHOW PROFILES;" to the respective queries in the $log.
+     *
+     * @return void
+     */
+    private function applyProfileData () {
+        if (!$this->isConnected() || !$this->log) {
+            return;
+        }
 
-		foreach ($queries as $q) {
-			// The original query is executed using parent:: method (not in the log).
-			if ($q['Query'] === 'SET `profiling_history_size` = 100') {
-				continue;
-			}
-			
-			$this->log[$q['Query_ID'] - 2]['duration'] = 1000000 * $q['Duration'];
-			$this->log[$q['Query_ID'] - 2]['query'] = $q['Query'];
-		}
-	}
+        $queries = \PDO::query("SHOW PROFILES")
+            ->fetchAll(\PDO::FETCH_ASSOC);
 
-	public function getLog () {
-		$this->applyProfileData();
+        foreach ($queries as $q) {
+            // The original query is executed using parent:: method (not in the log).
+            if ($q['Query'] === 'SET `profiling_history_size` = 100') {
+                continue;
+            }
 
-		return $this->log;
-	}
+            $this->log[$q['Query_ID'] - 2]['duration'] = 1000000 * $q['Duration'];
+            $this->log[$q['Query_ID'] - 2]['query'] = $q['Query'];
+        }
+    }
+
+    /**
+     * @return array
+     */
+    public function getLog () {
+        $this->applyProfileData();
+
+        return $this->log;
+    }
 }

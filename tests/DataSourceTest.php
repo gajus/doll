@@ -1,9 +1,9 @@
 <?php
-class DSNConstructorTest extends PHPUnit_Framework_TestCase {
+class DataSourceTest extends PHPUnit_Framework_TestCase {
     public function testDefaultDSN () {
-        $dsn_constructor = new \Gajus\Doll\DSNConstructor();
+        $data_source = new \Gajus\Doll\DataSource();
 
-        $dsn = $dsn_constructor->getDSN();
+        $dsn = $data_source->getDSN();
 
         $this->assertSame('mysql:charset=utf8', $dsn);
     }
@@ -12,9 +12,9 @@ class DSNConstructorTest extends PHPUnit_Framework_TestCase {
      * @dataProvider explicitDSNProvider
      */
     public function testExplicitDSN ($input_data_source, $output_expected_dsn) {
-        $dsn_constructor = new \Gajus\Doll\DSNConstructor($input_data_source);
+        $data_source = new \Gajus\Doll\DataSource($input_data_source);
 
-        $dsn = $dsn_constructor->getDSN();
+        $dsn = $data_source->getDSN();
 
         $this->assertSame($output_expected_dsn, $dsn);
     }
@@ -25,7 +25,7 @@ class DSNConstructorTest extends PHPUnit_Framework_TestCase {
                 [
                     'host' => '127.0.0.1',
                     'port' => 3306,
-                    'database_name' => 'foo',
+                    'database' => 'foo',
                     'charset' => 'utf8'
                 ],
                 'mysql:host=127.0.0.1;port=3306;dbname=foo;charset=utf8'
@@ -33,7 +33,7 @@ class DSNConstructorTest extends PHPUnit_Framework_TestCase {
             [
                 [
                     'unix_socket' => 'var',
-                    'database_name' => 'foo',
+                    'database' => 'foo',
                     'charset' => 'utf8'
                 ],
                 'mysql:dbname=foo;unix_socket=var;charset=utf8'
@@ -45,9 +45,9 @@ class DSNConstructorTest extends PHPUnit_Framework_TestCase {
      * @dataProvider getUsernameProvider
      */
     public function testGetUsername ($input_data_source, $output_username) {
-        $dsn_constructor = new \Gajus\Doll\DSNConstructor($input_data_source);
+        $data_source = new \Gajus\Doll\DataSource($input_data_source);
 
-        $username = $dsn_constructor->getUsername();
+        $username = $data_source->getUsername();
 
         $this->assertSame($output_username, $username);
     }
@@ -71,9 +71,9 @@ class DSNConstructorTest extends PHPUnit_Framework_TestCase {
      * @dataProvider getPasswordProvider
      */
     public function testGetPassword ($input_data_source, $output_password) {
-        $dsn_constructor = new \Gajus\Doll\DSNConstructor($input_data_source);
+        $data_source = new \Gajus\Doll\DataSource($input_data_source);
 
-        $password = $dsn_constructor->getPassword();
+        $password = $data_source->getPassword();
 
         $this->assertSame($output_password, $password);
     }
@@ -97,9 +97,9 @@ class DSNConstructorTest extends PHPUnit_Framework_TestCase {
      * @dataProvider getDriverOptionsProvider
      */
     public function testGetDriverOptions ($input_data_source, $output_data_source) {
-        $dsn_constructor = new \Gajus\Doll\DSNConstructor($input_data_source);
+        $data_source = new \Gajus\Doll\DataSource($input_data_source);
 
-        $driver_options = $dsn_constructor->getDriverOptions();
+        $driver_options = $data_source->getDriverOptions();
 
         $this->assertSame($output_data_source, $driver_options);   
     }
@@ -128,7 +128,7 @@ class DSNConstructorTest extends PHPUnit_Framework_TestCase {
      * @expectedExceptionMessage Unrecognized database source parameter.
      */
     public function testInvalidParameter () {
-        new \Gajus\Doll\DSNConstructor([
+        new \Gajus\Doll\DataSource([
             'foo' => 'bar'
         ]);
     }
@@ -138,7 +138,7 @@ class DSNConstructorTest extends PHPUnit_Framework_TestCase {
      * @expectedExceptionMessage "host" and "unix_socket" database source parameters cannot be used together.
      */
     public function testHostUnixSocketCannotBeUserTogether () {
-        new \Gajus\Doll\DSNConstructor([
+        new \Gajus\Doll\DataSource([
             'host' => '127.0.0.1',
             'unix_socket' => '/var'
         ]);
@@ -149,8 +149,25 @@ class DSNConstructorTest extends PHPUnit_Framework_TestCase {
      * @expectedExceptionMessage "port" database source parameter cannot be used without "host".
      */
     public function testPortCannotBeUsedWithoutHost () {
-        new \Gajus\Doll\DSNConstructor([
+        new \Gajus\Doll\DataSource([
             'port' => '3306'
         ]);
+    }
+
+    public function testCreatePDO () {
+        $data_source = new \Gajus\Doll\DataSource([
+            'username' => 'travis',
+            'database' => 'doll',
+            'driver_options' => [
+                \PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION
+            ]
+        ]);
+
+        $dbh = $data_source->constructPDO('PDO');
+
+        $this->assertInstanceOf('PDO', $dbh);
+
+        $this->assertSame(\PDO::ERRMODE_EXCEPTION, $dbh->getAttribute(\PDO::ATTR_ERRMODE));
+        $this->assertSame('doll', $dbh->query("SELECT DATABASE()")->fetch(\PDO::FETCH_COLUMN));
     }
 }

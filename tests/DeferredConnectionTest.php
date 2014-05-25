@@ -1,9 +1,17 @@
 <?php
 class DeferredConnectionTest extends PHPUnit_Framework_TestCase {
-    public function testDeferredConnectionNotConnectedUponConstruction () {
-        $db = new \Gajus\Doll\PDO('mysql:dbname=test');
+    private
+        $db;
 
-        $this->assertFalse($db->isInitialized());
+    public function setUp () {
+        $this->db = new \Gajus\Doll\PDO([
+            'username' => 'travis',
+            'database' => 'doll'
+        ]);
+    }
+
+    public function testDeferredConnectionNotConnectedUponConstruction () {
+        $this->assertFalse($this->db->isConnected());
     }
 
     /*public function testDeferredConnectionNotConnectedAfterStatement () {
@@ -11,39 +19,31 @@ class DeferredConnectionTest extends PHPUnit_Framework_TestCase {
 
         $db->prepare("SELECT 1;");
 
-        $this->assertFalse($db->isInitialized());
+        $this->assertFalse($db->isConnected());
     }*/
 
     public function testConnectedAfterStatementExecution () {
-        $db = new \Gajus\Doll\PDO('mysql:dbname=test');
-
-        $sth = $db->prepare("SELECT 1;");
+        $sth = $this->db->prepare("SELECT 1;");
         $sth->execute();
 
-        $this->assertTrue($db->isInitialized());
+        $this->assertTrue($this->db->isConnected());
     }
 
     public function testConnectedAfterQuery () {
-        $db = new \Gajus\Doll\PDO('mysql:dbname=test');
+        $this->db->query("SELECT 1;");
 
-        $db->query("SELECT 1;");
-
-        $this->assertTrue($db->isInitialized());
+        $this->assertTrue($this->db->isConnected());
     }
 
     public function testConnectedAfterExec () {
-        $db = new \Gajus\Doll\PDO('mysql:dbname=test');
+        $this->db->exec("SELECT 1;");
 
-        $db->exec("SELECT 1;");
-
-        $this->assertTrue($db->isInitialized());
+        $this->assertTrue($this->db->isConnected());
     }
 
     public function testConnectedAfterBeginTransaction () {
-        $db = new \Gajus\Doll\PDO('mysql:dbname=test');
+        $this->db->beginTransaction();
 
-        $db->beginTransaction();
-
-        $this->assertTrue($db->isInitialized());
+        $this->assertTrue($this->db->isConnected());
     }
 }
