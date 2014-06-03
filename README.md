@@ -5,17 +5,38 @@
 [![Latest Stable Version](https://poser.pugx.org/gajus/doll/version.png)](https://packagist.org/packages/gajus/doll)
 [![License](https://poser.pugx.org/gajus/doll/license.png)](https://packagist.org/packages/gajus/doll)
 
-Extended PDO with deferred connection, logging of queries and prepared statements (including the statement execution parameters) and benchmarking. Doll's `\Gajus\Doll\PDO::execute()` method returns instance of `\Gajus\Doll\PDOStatement` instead of boolean response. There are no other *bells and whistles*.
+Extended PDO with inline type hinting, deferred connection support, logging and benchmarking.
 
-## Deferred
+## Single Parameter Constructor
 
-When you iniate `\Gajus\Doll\PDO` instance:
+[PDO::__construct](http://uk3.php.net/manual/en/pdo.construct.php) is using Data Source Name (DSN) string to describe the connection. PDO DSN implementation does not include username, password and driver options.
+
+Doll instance is described using `DataSource` object:
 
 ```php
-$db = new \Gajus\Doll\PDO('mysql');
+$data_source = new \Gajus\Doll\DataSource([
+    'host' => '127.0.0.1',
+    'driver' => 'mysql',
+    'database' => null,
+    'username' => null,
+    'password' => null,
+    'charset' => 'utf8',
+    'collation' => 'utf8_general_ci',
+    'driver_options' => []
+]);
 ```
 
-Doll does not connect to the database. Instead, it will wait until you execute either of the following methods (i.e. run a query against the database):
+## Deferred Connection
+
+PDO will establish a connection to the database upon initialization. If application initializes PDO during the bootstrap, but does not execute queries (e.g. request that is served from cache), the connection is unnecessary.
+
+Doll will not connect to the database upon initialization:
+
+```php
+$db = new \Gajus\Doll\PDO($data_source);
+```
+
+The connection is deferred until either of the following methods are invoked:
 
 * [PDO::prepare()](http://php.net/manual/en/pdo.prepare.php)
 * [PDO::exec()](http://php.net/manual/en/pdo.exec.php)
@@ -25,57 +46,81 @@ Doll does not connect to the database. Instead, it will wait until you execute e
 * [PDO::rollBack()](http://php.net/manual/en/pdo.rollback.php)
 * [PDOStatement::execute()](http://php.net/manual/en/pdostatement.execute.php)
 
-## Documentation
+## Method Chaining
 
-Doll is a drop-in replecement for native PDO implementation, though vice-versa does not stand.
-
-### Instantiating
-
-[PDO::__construct](http://uk3.php.net/manual/en/pdo.construct.php) is using Data Source Name (DSN) to describe a connection to the data source. However, native PDO implementation separated out username, password and driver options into separate parameters. In practise, this makes sharing configuration cumbersome. As such, Doll opted to use a single array to describe connection:
+[PDOStatement::execute()](http://www.php.net/manual/en/pdostatement.execute.php) returns a boolean value indicating the state of the transaction, e.g.
 
 ```php
-[
-    'host' => '127.0.0.1',
-    'driver' => 'mysql',
-    'database' => null,
-    'username' => null,
-    'password' => null,
-    'charset' => 'utf8',
-    'collation' => 'utf8_general_ci',
-    'driver_options' => []
-]
-```
-
-#
-
-### Chaining
-
-Native [PDOStatement::execute()](http://www.php.net/manual/en/pdostatement.execute.php) returns a boolean value indicating state of the transaction. However, if you are using [PDO::ERRMODE_EXCEPTION](http://uk1.php.net/manual/en/pdo.error-handling.php) error handling strategy (Doll's default), the output is redundant. Doll returns instance of `\Gajus\Doll\PDOStatement` that allows chaining of calls, e.g.
-
-```php
-$input = $db
-    ->prepare("SELECT ?")
-    ->execute([1])
-    ->fetch(PDO::FETCH_COLUMN);
-```
-
-In case you forgot, native PDO implementation requires you to store the PDOStatement object:
-
-```php
-$sth = $db->prepare("SELECT ?");
-$sth->execute([1]);
+$sth = $db->prepare("SELECT ?"); // PDOStatement
+$sth->execute([1]); // boolean
 $input = $sth->fetch(PDO::FETCH_COLUMN);
 ```
 
-### Logging & Benchmarking
+However, if you are using [PDO::ERRMODE_EXCEPTION](http://uk1.php.net/manual/en/pdo.error-handling.php) error handling strategy, the output of `execute` is redundant.
+
+Doll forces `PDO::ERRMODE_EXCEPTION` error handling strategy, while `execute` method returns an instance of `\Gajus\Doll\PDOStatement`. This allows further method chaining, e.g.
+
+```php
+$input = $db
+    ->prepare("SELECT ?") // Gajus\Doll\PDOStatement
+    ->execute([1]) // Gajus\Doll\PDOStatement
+    ->fetch(PDO::FETCH_COLUMN);
+```
+
+## Inline Type Hinting
+
+[PDOStatement::bindValue()](http://php.net/manual/en/pdostatement.bindvalue.php) method allows to set the parameter type. However, the syntax is verbose:
+
+```php
+$sth = $db->prepare("SELECT :foo, :bar, :baz");
+$sth->bindValue('foo', 'foo', PDO::PARAM_STR);
+$sth->bindValue('bar', 1, PDO::PARAM_INT);
+$sth->bindValue('baz', $fp, PDO::PARAM_LOB);
+$sth->execute();
+```
+
+Doll allows inline type hinting:
+
+```php
+$sth = $db->prepare("SELECT s:foo, i:bar, l:baz");
+$sth->execute(['foo' => 'foo', 'bar' => 1, 'baz' => $fp]);
+```
+
+Doll implementation supports all of the parameter types:
+
+|Name|Parameter Type|
+|---|---|
+|`b`|`PDO::PARAM_BOOL`|
+|`n`|`PDO::PARAM_NULL`|
+|`i`|`PDO::PARAM_INT`|
+|`s`|`PDO::PARAM_STR`|
+|`l`|`PDO::PARAM_LOB`|
+
+### Placeholder Reuse
+
+PDO implementation does not allow reuse of the placeholders, e.g.
+
+```php
+$db->setAttribute(\PDO::ATTR_EMULATE_PREPARES, false);
+$db->prepare("SELECT :foo, :foo");
+```
+
+The above would cause the following error:
+
+> PDOException: SQLSTATE[HY093]: Invalid parameter number
+
+Doll allows reuse of placeholders.
+
+## Logging and Benchmarking
 
 Doll supports query and statement execution logging. To enable logging, you need to set `\Gajus\Doll\PDO::ATTR_LOGGING` attribute to `true`.
 
 ```php
-$db = new \Gajus\Doll\PDO('mysql');
 $db->setAttribute(\Gajus\Doll\PDO::ATTR_LOGGING, true);
 
-$db->prepare("SELECT :foo, SLEEP(.2)")->execute(['foo' => 'a']);
+$db
+    ->prepare("SELECT :foo, SLEEP(.2)")
+    ->execute(['foo' => 'a']);
 
 $log = $db->getLog();
 
@@ -117,23 +162,6 @@ array(1) {
 ```
 
 Query execution "duration" and "query" parameters are retrieved using MySQL [SHOW PROFILES](http://dev.mysql.com/doc/refman/5.0/en/show-profiles.html). Doll will automatically run diagnostics every 100 executions to overcome [100 queries limit](http://dev.mysql.com/doc/refman/5.6/en/show-profile.html).
-
-## Strict-type parameter binding
-
-Previous Doll implementation (before it had a name), supported syntactical sugar allowing to define parameter type while defining a prepared statement, e.g.
-
-```php
-$db
-    ->prepare("SELECT 1 FROM `foo` WHERE `bar_id` = i:bar_id AND `baz` = s:baz")
-    ->execute(['bar_id' => 1, 'baz' => 'qux'])
-    ->fetch(PDO::FETCH_ASSOC);
-```
-
-However, this raised issues with code portability across projects that don't support this syntax. MySQL itself is fairly good with [type converersion in expression evaluation](http://dev.mysql.com/doc/refman/5.5/en/type-conversion.html).
-
-## Logging
-
-Doll used to implement logging
 
 ## Watch out
 

@@ -37,8 +37,8 @@ class PDO extends \PDO {
      * 
      * @param array $constructor
      */
-    public function __construct (array $data_source = []) {
-        $this->data_source = new \Gajus\Doll\DataSource($data_source);
+    public function __construct (\Gajus\Doll\DataSource $data_source) {
+        $this->data_source = $data_source;
     }
 
     /**

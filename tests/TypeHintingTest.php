@@ -4,10 +4,10 @@ class TypeHintingTest extends PHPUnit_Framework_TestCase {
         $db;
 
     public function setUp () {
-        $this->db = new \Gajus\Doll\PDO([
+        $this->db = new \Gajus\Doll\PDO(new \Gajus\Doll\DataSource([
             'username' => 'travis',
             'database' => 'doll'
-        ]);
+        ]));
     }
 
     /**

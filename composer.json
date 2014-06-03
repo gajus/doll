@@ -1,7 +1,7 @@
 {
 	"name": "gajus/doll",
 	"version": "1.0.0",
-	"description": "Extended PDO with deferred connection, logging and benchmarking.",
+	"description": "Extended PDO with inline type hinting, deferred connection support, logging and benchmarking.",
 	"keywords": ["pdo", "database"],
 	"homepage": "https://github.com/gajus/doll",
 	"type": "library",
