@@ -12,7 +12,7 @@ before_script:
     - travis_retry composer self-update
     - travis_retry composer install --no-interaction --prefer-source --dev
     - mkdir -p build/logs
-    - sh -c "if [ '$DB' = 'mysql' ]; then mysql -e 'DROP DATABASE IF EXISTS `doll`; CREATE DATABASE `doll`;'; FI"
+    - sh -c "if [ '$DB' = 'mysql' ]; then mysql -e 'drop database if exists doll; create database doll;'; fi"
 
 script:
     - phpunit --verbose --coverage-clover build/logs/clover.xml
