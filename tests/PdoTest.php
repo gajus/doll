@@ -41,21 +41,31 @@ class PDOTest extends PHPUnit_Framework_TestCase {
     }
 
     /**
-     * @expectedException PDOException
-     * @expectedExceptionMessage SQLSTATE[HY093]: Invalid parameter number: parameter was not defined
+     * @expectedException Gajus\Doll\Exception\InvalidArgumentException
+     * @expectedExceptionMessage Prepared statement executed without values for all the placeholders.
      */
-    public function testThrowPDOException () {
-        $sth = $this->db
-            ->prepare("SELECT :foo")
-            ->execute(['bar' => 'test']);
+    public function testExecuteStatementWithoutAllTheValues () {
+        $this->db
+            ->prepare("SELECT :foo, :bar")
+            ->execute(['foo' => 1]);
     }
 
     /**
      * @expectedException Gajus\Doll\Exception\InvalidArgumentException
-     * @expectedExceptionMessage You cannot bind multiple values to a single parameter. You cannot bind more values than specified.
+     * @expectedExceptionMessage Prepared statement with named placeholders executed using list.
      */
-    public function testThrowDollException () {
-        $sth = $this->db
+    public function testExecuteStatementWithNamedPlaceholdersUsingList () {
+        $this->db
+            ->prepare("SELECT :foo, :bar")
+            ->execute([1, 2]);
+    }
+
+    /**
+     * @expectedException Gajus\Doll\Exception\InvalidArgumentException
+     * @expectedExceptionMessage Prepared statement executed with undefined parameters.
+     */
+    public function testExecuteStatementWithUndefindedNamedParameters () {
+        $this->db
             ->prepare("SELECT 1")
             ->execute(['bar' => 'test']);
     }

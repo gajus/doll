@@ -1,5 +1,6 @@
 {
 	"name": "gajus/doll",
+	"version": "1.0.0",
 	"description": "Extended PDO with deferred connection, logging and benchmarking.",
 	"keywords": ["pdo", "database"],
 	"homepage": "https://github.com/gajus/doll",

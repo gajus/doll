@@ -14,14 +14,6 @@ class DeferredConnectionTest extends PHPUnit_Framework_TestCase {
         $this->assertFalse($this->db->isConnected());
     }
 
-    /*public function testDeferredConnectionNotConnectedAfterStatement () {
-        $db = new \Gajus\Doll\PDO('mysql:dbname=test');
-
-        $db->prepare("SELECT 1;");
-
-        $this->assertFalse($db->isConnected());
-    }*/
-
     public function testConnectedAfterStatementExecution () {
         $sth = $this->db->prepare("SELECT 1;");
         $sth->execute();

@@ -110,19 +110,20 @@ class PDO extends \PDO {
             'l' => \PDO::PARAM_LOB
         ];
 
-        $placeholder_param_types = [];
         $placeholders = [];
         
-        $query = preg_replace_callback('/([bnisl])\:(\w+)/', function ($b) use ($param_types, &$placeholder_param_types, &$placeholders) {
-            $placeholder_param_types[$b[2]] = $param_types[$b[1]];
-
-            $placeholders[] = $b[2];
+        $query = preg_replace_callback('/([bnisl]?)\:(\w+)/', function ($b) use ($param_types, &$placeholders) {
+            
+            $placeholders[] = [
+                'name' => $b[2],
+                'type' => $b[1] ? $param_types[$b[1]] : \PDO::PARAM_STR
+            ];
 
             return '?';
         }, $statement);
 
         $statement = parent::prepare($query, $driver_options);
-        $statement->setPlaceholders($placeholders, $placeholder_param_types);
+        $statement->setPlaceholders($placeholders);
 
         return $statement;
     }
