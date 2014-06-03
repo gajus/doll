@@ -53,10 +53,12 @@ class PDOStatement extends \PDOStatement {
     public function execute ($parameters = []) {
         // Using named parameters
         if ($parameters && !array_key_exists(0, $parameters)) {
-            if (array_diff(array_unique(array_column($this->placeholders, 'name')), array_keys($parameters))) {
+            $placeholder_names = array_unique(array_map(function ($pn) { return $pn['name']; }, $this->placeholders));
+
+            if (array_diff($placeholder_names, array_keys($parameters))) {
                 // @todo Improve phrasing.
                 throw new Exception\InvalidArgumentException('Prepared statement executed without values for all the placeholders.');
-            } else if (array_diff(array_keys($parameters), array_unique(array_column($this->placeholders, 'name')))) {
+            } else if (array_diff(array_keys($parameters), $placeholder_names)) {
                 throw new Exception\InvalidArgumentException('Prepared statement executed with undefined parameters.');
             }
 
