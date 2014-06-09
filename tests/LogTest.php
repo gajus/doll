@@ -20,6 +20,40 @@ class LogTest extends PHPUnit_Framework_TestCase {
         $this->assertTrue($this->db->getAttribute(\Gajus\Doll\PDO::ATTR_LOGGING));
     }
 
+    public function testLogFormat () {
+        $this->db->setAttribute(\Gajus\Doll\PDO::ATTR_LOGGING, true);
+
+        $sth = $this->db->prepare("SELECT :foo");
+
+        $sth->execute(['foo' => 1]);
+
+        $log = $this->db->getLog();
+
+        $this->assertCount(1, $log);
+
+        $log[0]['execution_wall_time'] = 0;
+        $log[0]['execution_duration'] = 0;
+        $log[0]['execution_overhead'] = 0;
+
+        $this->assertSame([
+            'statement' => 'SELECT :foo',
+            'parameters' => [
+                'foo' => 1
+            ],
+            'execution_wall_time' => 0,
+            'backtrace' => [
+                'file' => __FILE__,
+                'line' => __LINE__ - 18,
+                'function' => 'execute',
+                'class' => 'Gajus\Doll\PDOStatement',
+                'type' => '->'
+            ],
+            'execution_duration' => 0,
+            'execution_overhead' => 0,
+            'query' => 'SELECT ?'
+        ], $log[0]);
+    }
+
     public function testLogEachStatementExecution () {
         $this->db->setAttribute(\Gajus\Doll\PDO::ATTR_LOGGING, true);
 
@@ -96,6 +130,6 @@ class LogTest extends PHPUnit_Framework_TestCase {
 
         $log = $this->db->getLog();
 
-        $this->assertSame(2, (int) round($log[0]['duration']/100000));
+        $this->assertSame(2, (int) round($log[0]['execution_duration']*10));
     }
 }

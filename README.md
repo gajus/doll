@@ -131,43 +131,38 @@ The log output contains the following information about each query:
 
 ```
 array(1) {
-  [0]=>
-  array(5) {
-    ["statement"]=>
-    string(23) "SELECT :foo, SLEEP(.2)"
-    ["parameters"]=>
-    array(1) {
-      ["foo"]=>
-      string(1) "a"
+    [0]=>
+        array(7) {
+            ["statement"]=>
+                string(22) "SELECT :foo, SLEEP(.2)"
+            ["parameters"]=>
+                array(1) {
+                    ["foo"]=>
+                        string(1) "a"
+                }
+            ["execution_wall_time"]=>
+                float(0.20117211341858)
+            ["backtrace"]=>
+                array(5) {
+                    ["file"]=>
+                        string(85) "/../doll/tests/LogTest.php"
+                    ["line"]=>
+                        int(28)
+                    ["function"]=>
+                        string(7) "execute"
+                    ["class"]=>
+                        string(23) "Gajus\Doll\PDOStatement"
+                    ["type"]=>
+                        string(2) "->"
+                }
+            ["execution_duration"]=>
+                float(0.200723)
+            ["execution_overhead"]=>
+                float(0.00044911341857909)
+            ["query"]=>
+                string(19) "SELECT ?, SLEEP(.2)"
     }
-    ["backtrace"]=>
-    array(5) {
-      ["file"]=>
-      string(58) "/var/www/dev/gajus kuizinas/2014 01 13 doll/test/index.php"
-      ["line"]=>
-      int(28)
-      ["function"]=>
-      string(7) "execute"
-      ["class"]=>
-      string(23) "Gajus\Doll\PDOStatement"
-      ["type"]=>
-      string(2) "->"
-    }
-    ["duration"]=>
-    float(200157.75)
-    ["query"]=>
-    string(19) "SELECT ?, SLEEP(.2)"
-  }
 }
 ```
 
-Query execution "duration" and "query" parameters are retrieved using MySQL [SHOW PROFILES](http://dev.mysql.com/doc/refman/5.0/en/show-profiles.html). Doll will automatically run diagnostics every 100 executions to overcome [100 queries limit](http://dev.mysql.com/doc/refman/5.6/en/show-profile.html).
-
-## Watch out
-
-* Doll defers PDO constructor until a query is executed against the database.
-* Doll constructor will disable `PDO::ATTR_EMULATE_PREPARES`.
-* Doll constructor will set `PDO::ATTR_ERRMODE` to `PDO::ERRMODE_EXCEPTION`. If you try to change it, Doll will throw an exception.
-* Doll constructor will set `PDO::ATTR_STATEMENT_CLASS` to use Doll's PDOStatement extension.
-* Doll's [execute](http://php.net/manual/en/pdostatement.execute.php) method will return instance of [PDOStatement](http://php.net/manual/en/class.pdostatement.php) instead of boolean value.
-* Doll is tested only with MySQL.
+"execution_duration" and "query" are retrieved from [SHOW PROFILES](http://dev.mysql.com/doc/refman/5.0/en/show-profiles.html). Doll will automatically run diagnostics every 100 executions to overcome the [limit of 100 queries](http://dev.mysql.com/doc/refman/5.6/en/show-profile.html).

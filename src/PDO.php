@@ -99,8 +99,10 @@ class PDO extends \PDO {
      * @param array $driver_options
      * @return Gajus\Doll\PDOStatement
      */
-    public function prepare ($statement, $driver_options = []) {
-        $this->on('prepare', $statement);
+    public function prepare ($query_string, $driver_options = []) {
+        $this->connect();
+
+        $this->on('prepare', $query_string);
 
         $param_types = [
             'b' => \PDO::PARAM_BOOL,
@@ -112,26 +114,31 @@ class PDO extends \PDO {
 
         $placeholders = [];
         
-        $query = preg_replace_callback('/([bnisl]?)\:(\w+)/', function ($b) use ($param_types, &$placeholders) {
-            
+        $query_string_with_question_mark_placeholders = preg_replace_callback('/([bnisl]?)\:(\w+)/', function ($b) use ($param_types, &$placeholders) {
             $placeholders[] = [
                 'name' => $b[2],
                 'type' => $b[1] ? $param_types[$b[1]] : \PDO::PARAM_STR
             ];
 
             return '?';
-        }, $statement);
+        }, $query_string);
 
-        $statement = parent::prepare($query, $driver_options);
-        $statement->setPlaceholders($placeholders);
+        $statement = parent::prepare($query_string_with_question_mark_placeholders, $driver_options);
+        $statement->setOriginalQueryPlaceholders($query_string, $placeholders);
 
         return $statement;
     }
 
     public function exec ($statement) {
-        $this->on('exec', $statement);
+        $this->connect();
+
+        $execution_wall_time = -microtime(true);
     
-        return parent::exec($statement);
+        $response = parent::exec($statement);
+
+        $this->on('exec', $statement, $execution_wall_time + microtime(true));
+
+        return $response;
     }
 
     /**
@@ -141,32 +148,59 @@ class PDO extends \PDO {
      * Method [ <internal:PDO> public method query ] {}
      */
     public function query ($statement) {
-        $this->on('query', $statement);
-    
+        $this->connect();
+
+        $execution_wall_time = -microtime(true);
+
+        // @todo Static redirect.
         $args = func_get_args();
         
-        return call_user_func_array(['parent', 'query'], $args);
+        $response = call_user_func_array(['parent', 'query'], $args);
+
+        $this->on('query', $statement, $execution_wall_time + microtime(true));
+
+        return $response;
     }
 
     public function beginTransaction () {
-        $this->on('beginTransaction', 'START TRANSACTION');
+        $this->connect();
+
+        $execution_wall_time = -microtime(true);
     
-        return parent::beginTransaction();
+        $response = parent::beginTransaction();
+
+        $this->on('beginTransaction', 'START TRANSACTION', $execution_wall_time + microtime(true));
+
+        return $response;
     }
     
     public function commit () {
-        $this->on('commit', 'COMMIT');
+        $this->connect();
+
+        $execution_wall_time = -microtime(true);
+
+        $response = parent::commit();
+
+        $this->on('commit', 'COMMIT', $execution_wall_time + microtime(true));
         
-        return parent::commit();
+        return $response;
     }
         
     /**
      * @return bool
      */
     public function rollBack () {
-        $this->on('rollBack', 'ROLLBACK');
-    
-        return parent::rollBack();
+        $this->connect();
+
+        $execution_wall_time = -microtime(true);
+
+        $response = parent::rollBack();
+
+        $this->on('rollBack', 'ROLLBACK', $execution_wall_time + microtime(true));
+
+        $this->register($event);
+
+        return $response;
     }
 
     /**
@@ -174,12 +208,11 @@ class PDO extends \PDO {
      *
      * @param string $method Method used to execute the query: exec, prepare/execute, query, including beginTransaction, commit and rollBack.
      * @param string $statement The query or prepared statement.
+     * @param float $execution_wall_time Statement execution time calculated using microtime.
      * @param array $parameters The parameters used to execute a prepared statement.
      * @return null
      */
-    public function on ($method, $statement, array $parameters = []) {
-        $this->connect();
-
+    public function on ($method, $statement, $execution_wall_time = null, array $parameters = []) {
         if ($method !== 'prepare' && $this->logging) {
             $statement = trim(preg_replace('/\s+/', ' ', str_replace("\n", ' ', $statement)));
             $backtrace = debug_backtrace(\DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1];
@@ -187,6 +220,7 @@ class PDO extends \PDO {
             $this->log[] = [
                 'statement' => $statement,
                 'parameters' => $parameters,
+                'execution_wall_time' => $execution_wall_time,
                 'backtrace' => $backtrace
             ];
         
@@ -243,6 +277,13 @@ class PDO extends \PDO {
 
         $queries = \PDO::query("SHOW PROFILES")
             ->fetchAll(\PDO::FETCH_ASSOC);
+        
+        // http://dev.mysql.com/doc/refman/5.7/en/show-profiles.html
+        // "These statements are deprecated and will be removed in a future MySQL release. Use the Performance Schema instead; see Chapter 21, MySQL Performance Schema."
+        // However, information_schema does not give access to the original query via the query_id.
+        
+        #$queries = \PDO::query("SELECT * FROM `information_schema`.`profiling` ORDER BY `query_id`, `seq`")
+        #    ->fetchAll(\PDO::FETCH_ASSOC);
 
         foreach ($queries as $q) {
             // The original query is executed using parent:: method (not in the log).
@@ -250,7 +291,8 @@ class PDO extends \PDO {
                 continue;
             }
 
-            $this->log[$q['Query_ID'] - 2]['duration'] = 1000000 * $q['Duration'];
+            $this->log[$q['Query_ID'] - 2]['execution_duration'] = $q['Duration'];
+            $this->log[$q['Query_ID'] - 2]['execution_overhead'] = $this->log[$q['Query_ID'] - 2]['execution_wall_time'] - $q['Duration'];
             $this->log[$q['Query_ID'] - 2]['query'] = $q['Query'];
         }
     }

@@ -12,6 +12,10 @@ class PDOStatement extends \PDOStatement {
          */
         $dbh,
         /**
+         * @var string
+         */
+        $original_query_string,
+        /**
          * @var array
          */
         $placeholders;
@@ -24,23 +28,24 @@ class PDOStatement extends \PDOStatement {
     }
 
     /**
+     * @param string $original_query_string Original query might use named placeholders. Inherited statement will always use question-mark placeholders.
+     * @param array $placeholders
      * @return null
      */
-    public function setPlaceholders (array $placeholders) {
+    public function setOriginalQueryPlaceholders ($original_query_string, array $placeholders) {
         if ($this->placeholders !== null) {
             throw new Exception\LogicException('Placeholders can be set only at the time of building the statement.');
         }
 
+        $this->original_query_string = $original_query_string;
         $this->placeholders = $placeholders;
     }
-
-    #public function get
     
     /**
      * @return $this
      */
     public function nextRowset() {
-         if (!parent::nextRowset()) {
+        if (!parent::nextRowset()) {
             throw new Exception\RuntimeException('Rowset is not available.');
         }
         
@@ -51,9 +56,13 @@ class PDOStatement extends \PDOStatement {
      * @return $this
      */
     public function execute ($parameters = []) {
+        $execution_wall_time = -microtime(true);
+
         // Using named parameters
         if ($parameters && !array_key_exists(0, $parameters)) {
-            $placeholder_names = array_unique(array_map(function ($pn) { return $pn['name']; }, $this->placeholders));
+            $placeholder_names = array_unique(array_map(function ($pn) {
+                    return $pn['name'];
+            }, $this->placeholders));
 
             if (array_diff($placeholder_names, array_keys($parameters))) {
                 // @todo Improve phrasing.
@@ -91,7 +100,7 @@ class PDOStatement extends \PDOStatement {
             }
         }
 
-        $this->dbh->on('execute', $this->queryString, $parameters);
+        $this->dbh->on('execute', $this->original_query_string, $execution_wall_time + microtime(true), $parameters);
 
         return $this;
     }
