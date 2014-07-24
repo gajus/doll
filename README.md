@@ -21,7 +21,6 @@ $data_source = new \Gajus\Doll\DataSource([
     'username' => null,
     'password' => null,
     'charset' => 'utf8',
-    'collation' => 'utf8_general_ci',
     'driver_options' => []
 ]);
 ```
