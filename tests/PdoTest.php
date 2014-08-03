@@ -1,9 +1,10 @@
 <?php
-class PDOTest extends PHPUnit_Framework_TestCase {
-    private
-        $db;
+class PdoTest extends PHPUnit_Framework_TestCase
+{
+    private $db;
 
-    public function setUp () {
+    public function setUp()
+    {
         $this->db = new \Gajus\Doll\PDO(new \Gajus\Doll\DataSource([
             'username' => 'travis',
             'database' => 'doll'
@@ -13,11 +14,13 @@ class PDOTest extends PHPUnit_Framework_TestCase {
     /**
      * @dataProvider defaultAttributeProvider
      */
-    public function testDefaultAttribute ($attribute, $value) {
+    public function testDefaultAttribute($attribute, $value)
+    {
         $this->assertSame($value, $this->db->getAttribute($attribute));
     }
 
-    public function defaultAttributeProvider () {
+    public function defaultAttributeProvider()
+    {
         return [
             #[\PDO::ATTR_STRINGIFY_FETCHES, false],
             #[\PDO::ATTR_EMULATE_PREPARES, false],
@@ -25,14 +28,16 @@ class PDOTest extends PHPUnit_Framework_TestCase {
         ];
     }
 
-    public function testPDOStatementIsDoll () {
+    public function testPDOStatementIsDoll()
+    {
         $sth = $this->db
             ->prepare("SELECT :foo");
-        
+
         $this->assertInstanceOf('Gajus\Doll\PDOStatement', $sth);
     }
 
-    public function testExecutedStatementReturnsStatement () {
+    public function testExecutedStatementReturnsStatement()
+    {
         $sth = $this->db
             ->prepare("SELECT :foo")
             ->execute(['foo' => 1]);
@@ -44,7 +49,8 @@ class PDOTest extends PHPUnit_Framework_TestCase {
      * @expectedException Gajus\Doll\Exception\InvalidArgumentException
      * @expectedExceptionMessage Prepared statement executed without values for all the placeholders.
      */
-    public function testExecuteStatementWithoutAllTheValues () {
+    public function testExecuteStatementWithoutAllTheValues()
+    {
         $this->db
             ->prepare("SELECT :foo, :bar")
             ->execute(['foo' => 1]);
@@ -54,7 +60,8 @@ class PDOTest extends PHPUnit_Framework_TestCase {
      * @expectedException Gajus\Doll\Exception\InvalidArgumentException
      * @expectedExceptionMessage Prepared statement with named placeholders executed using list.
      */
-    public function testExecuteStatementWithNamedPlaceholdersUsingList () {
+    public function testExecuteStatementWithNamedPlaceholdersUsingList()
+    {
         $this->db
             ->prepare("SELECT :foo, :bar")
             ->execute([1, 2]);
@@ -64,7 +71,8 @@ class PDOTest extends PHPUnit_Framework_TestCase {
      * @expectedException Gajus\Doll\Exception\InvalidArgumentException
      * @expectedExceptionMessage Prepared statement executed with undefined parameters.
      */
-    public function testExecuteStatementWithUndefindedNamedParameters () {
+    public function testExecuteStatementWithUndefindedNamedParameters()
+    {
         $this->db
             ->prepare("SELECT 1")
             ->execute(['bar' => 'test']);

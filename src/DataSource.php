@@ -5,7 +5,8 @@ namespace Gajus\Doll;
  * @link https://github.com/gajus/doll for the canonical source repository
  * @license https://github.com/gajus/doll/blob/master/LICENSE BSD 3-Clause
  */
-class DataSource {
+class DataSource
+{
     static private
         /**
          * @var array
@@ -22,16 +23,16 @@ class DataSource {
             'driver_options' => []
         ];
 
-    private
-        /**
+    /**
          * @var array
          */
-        $data_source = [];
+        private $data_source = [];
 
-    /** 
+    /**
      * @param array $data_source
      */
-    public function __construct (array $data_source = []) {
+    public function __construct(array $data_source = [])
+    {
         if (array_diff_key($data_source, static::$default_data_source)) {
             throw new Exception\InvalidArgumentException('Unrecognized database source parameter.');
         }
@@ -49,10 +50,11 @@ class DataSource {
 
     /**
      * Generate the connection string.
-     * 
+     *
      * @return string
      */
-    public function getDSN () {
+    public function getDSN()
+    {
         $dsn = [];
 
         // Pick $data_source parameters that make up the DSN string.
@@ -82,29 +84,33 @@ class DataSource {
     /**
      * @return null|string
      */
-    public function getUsername () {
+    public function getUsername()
+    {
         return isset($this->data_source['username']) ? $this->data_source['username'] : null;
     }
 
     /**
      * @array null|string
      */
-    public function getPassword () {
+    public function getPassword()
+    {
         return isset($this->data_source['password']) ? $this->data_source['password'] : null;
     }
 
     /**
      * @return array
      */
-    public function getDriverOptions () {
+    public function getDriverOptions()
+    {
         return isset($this->data_source['driver_options']) ? $this->data_source['driver_options'] : [];
     }
 
     /**
-     * @param string $pdo_class Name of the PDO class.
+     * @param  string         $pdo_class Name of the PDO class.
      * @return Gajus\Doll\PDO
      */
-    public function constructPDO ($pdo_class = 'Gajus\Doll\PDO') {
+    public function constructPDO($pdo_class = 'Gajus\Doll\PDO')
+    {
         return new $pdo_class ($this->getDSN(), $this->getUsername(), $this->getPassword(), $this->getDriverOptions());
     }
 }

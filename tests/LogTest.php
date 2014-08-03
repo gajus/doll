@@ -1,26 +1,30 @@
 <?php
-class LogTest extends PHPUnit_Framework_TestCase {
-    private
-        $db;
+class LogTest extends PHPUnit_Framework_TestCase
+{
+    private $db;
 
-    public function setUp () {
+    public function setUp()
+    {
         $this->db = new \Gajus\Doll\PDO(new \Gajus\Doll\DataSource([
             'username' => 'travis',
             'database' => 'doll'
         ]));
     }
 
-    public function testDefaultToNoLogging () {
+    public function testDefaultToNoLogging()
+    {
         $this->assertFalse($this->db->getAttribute(\Gajus\Doll\PDO::ATTR_LOGGING));
     }
 
-    public function testEnableLogging () {
+    public function testEnableLogging()
+    {
         $this->db->setAttribute(\Gajus\Doll\PDO::ATTR_LOGGING, true);
 
         $this->assertTrue($this->db->getAttribute(\Gajus\Doll\PDO::ATTR_LOGGING));
     }
 
-    public function testLogFormat () {
+    public function testLogFormat()
+    {
         $this->db->setAttribute(\Gajus\Doll\PDO::ATTR_LOGGING, true);
 
         $sth = $this->db->prepare("SELECT :foo");
@@ -54,7 +58,8 @@ class LogTest extends PHPUnit_Framework_TestCase {
         ], $log[0]);
     }
 
-    public function testLogEachStatementExecution () {
+    public function testLogEachStatementExecution()
+    {
         $this->db->setAttribute(\Gajus\Doll\PDO::ATTR_LOGGING, true);
 
         $sth = $this->db->prepare("SELECT 1");
@@ -67,7 +72,8 @@ class LogTest extends PHPUnit_Framework_TestCase {
         $this->assertCount(2, $log);
     }
 
-    public function testDoNotLogStatementExecutionWhenLoggingIsNotEnabled () {
+    public function testDoNotLogStatementExecutionWhenLoggingIsNotEnabled()
+    {
         $sth = $this->db->prepare("SELECT 1");
 
         $sth->execute();
@@ -78,13 +84,15 @@ class LogTest extends PHPUnit_Framework_TestCase {
         $this->assertCount(0, $log);
     }
 
-    public function testDoNotLogNotExecutedStatement () {
+    public function testDoNotLogNotExecutedStatement()
+    {
         $sth = $this->db->prepare("SELECT 1");
 
         $this->assertCount(0, $this->db->getLog());
     }
 
-    public function testExecutedStatementBacktraceAlignment () {
+    public function testExecutedStatementBacktraceAlignment()
+    {
         $this->db->setAttribute(\Gajus\Doll\PDO::ATTR_LOGGING, true);
 
         $sth = $this->db->prepare("SELECT 1");
@@ -97,7 +105,8 @@ class LogTest extends PHPUnit_Framework_TestCase {
         $this->assertSame($statement_execution_line, $log[0]['backtrace']['line']);
     }
 
-    public function testExecutedStatementParameterLogging () {
+    public function testExecutedStatementParameterLogging()
+    {
         $this->db->setAttribute(\Gajus\Doll\PDO::ATTR_LOGGING, true);
 
         $sth = $this->db->prepare("SELECT :foo");
@@ -109,7 +118,8 @@ class LogTest extends PHPUnit_Framework_TestCase {
         $this->assertSame(['foo' => 1], $log[0]['parameters']);
     }
 
-    public function testExecutedStatementLogAlignmentWithProfiles () {
+    public function testExecutedStatementLogAlignmentWithProfiles()
+    {
         $this->db->setAttribute(\Gajus\Doll\PDO::ATTR_LOGGING, true);
 
         for ($i = 0; $i < 200; $i++) {
@@ -123,7 +133,8 @@ class LogTest extends PHPUnit_Framework_TestCase {
         $this->assertSame("/* 199 */ SELECT 'a'", $log[199]['statement']);
     }
 
-    public function testStatementExecutionTimeTracking () {
+    public function testStatementExecutionTimeTracking()
+    {
         $this->db->setAttribute(\Gajus\Doll\PDO::ATTR_LOGGING, true);
 
         $this->db->query("SELECT SLEEP(.2)");

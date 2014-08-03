@@ -1,6 +1,8 @@
 <?php
-class DataSourceTest extends PHPUnit_Framework_TestCase {
-    public function testDefaultDSN () {
+class DataSourceTest extends PHPUnit_Framework_TestCase
+{
+    public function testDefaultDSN()
+    {
         $data_source = new \Gajus\Doll\DataSource();
 
         $dsn = $data_source->getDSN();
@@ -11,7 +13,8 @@ class DataSourceTest extends PHPUnit_Framework_TestCase {
     /**
      * @dataProvider explicitDSNProvider
      */
-    public function testExplicitDSN ($input_data_source, $output_expected_dsn) {
+    public function testExplicitDSN($input_data_source, $output_expected_dsn)
+    {
         $data_source = new \Gajus\Doll\DataSource($input_data_source);
 
         $dsn = $data_source->getDSN();
@@ -19,7 +22,8 @@ class DataSourceTest extends PHPUnit_Framework_TestCase {
         $this->assertSame($output_expected_dsn, $dsn);
     }
 
-    public function explicitDSNProvider () {
+    public function explicitDSNProvider()
+    {
         return [
             [
                 [
@@ -44,7 +48,8 @@ class DataSourceTest extends PHPUnit_Framework_TestCase {
     /**
      * @dataProvider getUsernameProvider
      */
-    public function testGetUsername ($input_data_source, $output_username) {
+    public function testGetUsername($input_data_source, $output_username)
+    {
         $data_source = new \Gajus\Doll\DataSource($input_data_source);
 
         $username = $data_source->getUsername();
@@ -52,7 +57,8 @@ class DataSourceTest extends PHPUnit_Framework_TestCase {
         $this->assertSame($output_username, $username);
     }
 
-    public function getUsernameProvider () {
+    public function getUsernameProvider()
+    {
         return [
             [
                 [
@@ -70,7 +76,8 @@ class DataSourceTest extends PHPUnit_Framework_TestCase {
     /**
      * @dataProvider getPasswordProvider
      */
-    public function testGetPassword ($input_data_source, $output_password) {
+    public function testGetPassword($input_data_source, $output_password)
+    {
         $data_source = new \Gajus\Doll\DataSource($input_data_source);
 
         $password = $data_source->getPassword();
@@ -78,7 +85,8 @@ class DataSourceTest extends PHPUnit_Framework_TestCase {
         $this->assertSame($output_password, $password);
     }
 
-    public function getPasswordProvider () {
+    public function getPasswordProvider()
+    {
         return [
             [
                 [
@@ -96,15 +104,17 @@ class DataSourceTest extends PHPUnit_Framework_TestCase {
     /**
      * @dataProvider getDriverOptionsProvider
      */
-    public function testGetDriverOptions ($input_data_source, $output_data_source) {
+    public function testGetDriverOptions($input_data_source, $output_data_source)
+    {
         $data_source = new \Gajus\Doll\DataSource($input_data_source);
 
         $driver_options = $data_source->getDriverOptions();
 
-        $this->assertSame($output_data_source, $driver_options);   
+        $this->assertSame($output_data_source, $driver_options);
     }
 
-    public function getDriverOptionsProvider () {
+    public function getDriverOptionsProvider()
+    {
         return [
             [
                 [
@@ -127,7 +137,8 @@ class DataSourceTest extends PHPUnit_Framework_TestCase {
      * @expectedException Gajus\Doll\Exception\InvalidArgumentException
      * @expectedExceptionMessage Unrecognized database source parameter.
      */
-    public function testInvalidParameter () {
+    public function testInvalidParameter()
+    {
         new \Gajus\Doll\DataSource([
             'foo' => 'bar'
         ]);
@@ -137,7 +148,8 @@ class DataSourceTest extends PHPUnit_Framework_TestCase {
      * @expectedException Gajus\Doll\Exception\LogicException
      * @expectedExceptionMessage "host" and "unix_socket" database source parameters cannot be used together.
      */
-    public function testHostUnixSocketCannotBeUserTogether () {
+    public function testHostUnixSocketCannotBeUserTogether()
+    {
         new \Gajus\Doll\DataSource([
             'host' => '127.0.0.1',
             'unix_socket' => '/var'
@@ -148,13 +160,15 @@ class DataSourceTest extends PHPUnit_Framework_TestCase {
      * @expectedException Gajus\Doll\Exception\LogicException
      * @expectedExceptionMessage "port" database source parameter cannot be used without "host".
      */
-    public function testPortCannotBeUsedWithoutHost () {
+    public function testPortCannotBeUsedWithoutHost()
+    {
         new \Gajus\Doll\DataSource([
             'port' => '3306'
         ]);
     }
 
-    public function testCreatePDO () {
+    public function testCreatePDO()
+    {
         $data_source = new \Gajus\Doll\DataSource([
             'username' => 'travis',
             'database' => 'doll',

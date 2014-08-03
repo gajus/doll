@@ -5,7 +5,8 @@ namespace Gajus\Doll;
  * @link https://github.com/gajus/doll for the canonical source repository
  * @license https://github.com/gajus/doll/blob/master/LICENSE BSD 3-Clause
  */
-class PDO extends \PDO {
+class PDO extends \PDO
+{
     const ATTR_LOGGING = 'Gajus\Doll\1';
 
     private
@@ -19,7 +20,7 @@ class PDO extends \PDO {
         $data_source,
         /**
          * Database attributes that were set before database connection is established.
-         * 
+         *
          * @var array
          */
         $attributes = [],
@@ -33,28 +34,31 @@ class PDO extends \PDO {
         $log = [];
 
     /**
-     * The constructor does not 
-     * 
+     * The constructor does not
+     *
      * @param array $constructor
      */
-    public function __construct (\Gajus\Doll\DataSource $data_source) {
+    public function __construct(\Gajus\Doll\DataSource $data_source)
+    {
         $this->data_source = $data_source;
     }
 
     /**
      * @return boolean Indicates whether PDO has connected to the database.
      */
-    public function isConnected () {
+    public function isConnected()
+    {
         return $this->is_connected;
     }
 
     /**
      * Logs database handle attributes that are set before PDO is constructed.
-     * 
+     *
      * @param string $attribute
-     * @param mixed $value
+     * @param mixed  $value
      */
-    public function setAttribute ($attribute, $value) {
+    public function setAttribute($attribute, $value)
+    {
         if ($attribute === \PDO::ATTR_ERRMODE) {
             throw new Exception\InvalidArgumentException('Doll does not allow to change PDO::ATTR_ERRMODE.');
         }
@@ -81,10 +85,11 @@ class PDO extends \PDO {
     }
 
     /**
-     * @param int $attribute
+     * @param  int   $attribute
      * @return mixed
      */
-    public function getAttribute ($attribute) {
+    public function getAttribute($attribute)
+    {
         if ($attribute === \gajus\doll\PDO::ATTR_LOGGING) {
             return $this->logging;
         }
@@ -95,11 +100,12 @@ class PDO extends \PDO {
     }
 
     /**
-     * @param string $statement
-     * @param array $driver_options
+     * @param  string                  $statement
+     * @param  array                   $driver_options
      * @return Gajus\Doll\PDOStatement
      */
-    public function prepare ($query_string, $driver_options = []) {
+    public function prepare($query_string, $driver_options = [])
+    {
         $this->connect();
 
         $this->on('prepare', $query_string);
@@ -113,7 +119,7 @@ class PDO extends \PDO {
         ];
 
         $placeholders = [];
-        
+
         $query_string_with_question_mark_placeholders = preg_replace_callback('/([bnisl]?)\:(\w+)/', function ($b) use ($param_types, &$placeholders) {
             $placeholders[] = [
                 'name' => $b[2],
@@ -129,11 +135,12 @@ class PDO extends \PDO {
         return $statement;
     }
 
-    public function exec ($statement) {
+    public function exec($statement)
+    {
         $this->connect();
 
         $execution_wall_time = -microtime(true);
-    
+
         $response = parent::exec($statement);
 
         $this->on('exec', $statement, $execution_wall_time + microtime(true));
@@ -147,14 +154,15 @@ class PDO extends \PDO {
      *
      * Method [ <internal:PDO> public method query ] {}
      */
-    public function query ($statement) {
+    public function query($statement)
+    {
         $this->connect();
 
         $execution_wall_time = -microtime(true);
 
         // @todo Static redirect.
         $args = func_get_args();
-        
+
         $response = call_user_func_array(['parent', 'query'], $args);
 
         $this->on('query', $statement, $execution_wall_time + microtime(true));
@@ -162,19 +170,21 @@ class PDO extends \PDO {
         return $response;
     }
 
-    public function beginTransaction () {
+    public function beginTransaction()
+    {
         $this->connect();
 
         $execution_wall_time = -microtime(true);
-    
+
         $response = parent::beginTransaction();
 
         $this->on('beginTransaction', 'START TRANSACTION', $execution_wall_time + microtime(true));
 
         return $response;
     }
-    
-    public function commit () {
+
+    public function commit()
+    {
         $this->connect();
 
         $execution_wall_time = -microtime(true);
@@ -182,14 +192,15 @@ class PDO extends \PDO {
         $response = parent::commit();
 
         $this->on('commit', 'COMMIT', $execution_wall_time + microtime(true));
-        
+
         return $response;
     }
-        
+
     /**
      * @return bool
      */
-    public function rollBack () {
+    public function rollBack()
+    {
         $this->connect();
 
         $execution_wall_time = -microtime(true);
@@ -206,13 +217,14 @@ class PDO extends \PDO {
     /**
      * This has to be public since it is accessed by the instance of \gajus\doll\PDOStatement.
      *
-     * @param string $method Method used to execute the query: exec, prepare/execute, query, including beginTransaction, commit and rollBack.
-     * @param string $statement The query or prepared statement.
-     * @param float $execution_wall_time Statement execution time calculated using microtime.
-     * @param array $parameters The parameters used to execute a prepared statement.
+     * @param  string $method              Method used to execute the query: exec, prepare/execute, query, including beginTransaction, commit and rollBack.
+     * @param  string $statement           The query or prepared statement.
+     * @param  float  $execution_wall_time Statement execution time calculated using microtime.
+     * @param  array  $parameters          The parameters used to execute a prepared statement.
      * @return null
      */
-    public function on ($method, $statement, $execution_wall_time = null, array $parameters = []) {
+    public function on($method, $statement, $execution_wall_time = null, array $parameters = [])
+    {
         if ($method !== 'prepare' && $this->logging) {
             $statement = trim(preg_replace('/\s+/', ' ', str_replace("\n", ' ', $statement)));
             $backtrace = debug_backtrace(\DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1];
@@ -223,7 +235,7 @@ class PDO extends \PDO {
                 'execution_wall_time' => $execution_wall_time,
                 'backtrace' => $backtrace
             ];
-        
+
             if (count($this->log) % 100 === 0) {
                 $this->applyProfileData();
             }
@@ -233,10 +245,11 @@ class PDO extends \PDO {
     /**
      * Connect to the database using the constructor parameter and attributes
      * that were collected prior to triggering connection to the database.
-     * 
+     *
      * @return null
      */
-    private function connect () {
+    private function connect()
+    {
         if ($this->isConnected()) {
             return;
         }
@@ -270,18 +283,19 @@ class PDO extends \PDO {
      *
      * @return void
      */
-    private function applyProfileData () {
+    private function applyProfileData()
+    {
         if (!$this->isConnected() || !$this->log) {
             return;
         }
 
         $queries = \PDO::query("SHOW PROFILES")
             ->fetchAll(\PDO::FETCH_ASSOC);
-        
+
         // http://dev.mysql.com/doc/refman/5.7/en/show-profiles.html
         // "These statements are deprecated and will be removed in a future MySQL release. Use the Performance Schema instead; see Chapter 21, MySQL Performance Schema."
         // However, information_schema does not give access to the original query via the query_id.
-        
+
         #$queries = \PDO::query("SELECT * FROM `information_schema`.`profiling` ORDER BY `query_id`, `seq`")
         #    ->fetchAll(\PDO::FETCH_ASSOC);
 
@@ -300,7 +314,8 @@ class PDO extends \PDO {
     /**
      * @return array
      */
-    public function getLog () {
+    public function getLog()
+    {
         $this->applyProfileData();
 
         return $this->log;
