@@ -4,46 +4,47 @@ namespace gajus\doll;
 /**
  * Not implemented.
  */
-public function getQueryLogTable () {
-	$this->applyProfileData();
-	
-	//require_once __DIR__ . '/sql-formatter-master/lib/SqlFormatter.php';
-	
-	$total_duration	= array_sum(array_map(function ($e) {
-			return $e['duration'];
-	}, $this->query_log));
-	
-	$format_microseconds = function ($time) {
-		$time = (int) $time;
-	
-		$pad = FALSE;
-		$suffix = 'µs';
-	
-		if ($time >= 1000) {
-			$time = $time / 1000;
-			$suffix = 'ms';
-			
-			if ($time >= 1000) {
-				$pad = TRUE;
-				
-				$time = $time / 1000;
-				$suffix = 's';
-				
-				if ($time >= 60) {
-					$time = $time / 60;
-					$suffix = 'm';
-				}
-			}
-		}
-		
-		return $pad ? sprintf('<span class="value">%.4f</span> <span class="measure">' . $suffix . '</span>', $time) : '<span class="value">' . $time . '</span> <span class="measure">' . $suffix . '</span>';
-	};
-	
-	ob_start();
-	?>
+public function getQueryLogTable()
+{
+    $this->applyProfileData();
+
+    //require_once __DIR__ . '/sql-formatter-master/lib/SqlFormatter.php';
+
+    $total_duration    = array_sum(array_map(function ($e) {
+            return $e['duration'];
+    }, $this->query_log));
+
+    $format_microseconds = function ($time) {
+        $time = (int) $time;
+
+        $pad = false;
+        $suffix = 'µs';
+
+        if ($time >= 1000) {
+            $time = $time / 1000;
+            $suffix = 'ms';
+
+            if ($time >= 1000) {
+                $pad = true;
+
+                $time = $time / 1000;
+                $suffix = 's';
+
+                if ($time >= 60) {
+                    $time = $time / 60;
+                    $suffix = 'm';
+                }
+            }
+        }
+
+        return $pad ? sprintf('<span class="value">%.4f</span> <span class="measure">' . $suffix . '</span>', $time) : '<span class="value">' . $time . '</span> <span class="measure">' . $suffix . '</span>';
+    };
+
+    ob_start();
+    ?>
 	<style>
 	.mysql-debug-table { font-family: monospace; overflow: hidden; }
-	
+
 	.mysql-debug-table tr:nth-child(odd) { background: #eee; }
 	.mysql-debug-table tr:hover { background: #ffffd1; }
 	.mysql-debug-table pre { margin: 0; padding: 5px; white-space: normal; }
@@ -67,7 +68,7 @@ public function getQueryLogTable () {
 	if (typeof jQuery !== 'undefined') {
 		$(function () {
 			$('.mysql-debug-table tr').removeClass('open');
-			
+
 			$('.mysql-debug-table tr').on('click', function () {
 				$(this).toggleClass('open');
 			});
@@ -111,5 +112,6 @@ public function getQueryLogTable () {
 	</table>
 	</div>
 <?php
-	return ob_get_clean();
+
+    return ob_get_clean();
 }

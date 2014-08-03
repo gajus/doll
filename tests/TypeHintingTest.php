@@ -1,9 +1,10 @@
 <?php
-class TypeHintingTest extends PHPUnit_Framework_TestCase {
-    private
-        $db;
+class TypeHintingTest extends PHPUnit_Framework_TestCase
+{
+    private $db;
 
-    public function setUp () {
+    public function setUp()
+    {
         $this->db = new \Gajus\Doll\PDO(new \Gajus\Doll\DataSource([
             'username' => 'travis',
             'database' => 'doll'
@@ -13,7 +14,8 @@ class TypeHintingTest extends PHPUnit_Framework_TestCase {
     /**
      * @dataProvider typeHintProvider
      */
-    public function testTypeHint ($name, $value) {
+    public function testTypeHint($name, $value)
+    {
         $sth = $this->db->prepare("SELECT {$name}:foo");
 
         $reflection = new ReflectionProperty($sth, 'placeholders');
@@ -23,7 +25,8 @@ class TypeHintingTest extends PHPUnit_Framework_TestCase {
         $this->assertSame($value, $placeholders[0]['type']);
     }
 
-    public function typeHintProvider () {
+    public function typeHintProvider()
+    {
         return [
             ['', PDO::PARAM_STR],
             ['b', PDO::PARAM_BOOL],
