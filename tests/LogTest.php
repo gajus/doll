@@ -4,10 +4,7 @@ class LogTest extends PHPUnit_Framework_TestCase {
         $db;
 
     public function setUp () {
-        $this->db = new \Gajus\Doll\PDO(new \Gajus\Doll\DataSource([
-            'username' => 'travis',
-            'database' => 'doll'
-        ]));
+        $this->db = new \Gajus\Doll\PDO(new \Gajus\Doll\DataSource($_ENV['dsn']));
     }
 
     public function testDefaultToNoLogging () {

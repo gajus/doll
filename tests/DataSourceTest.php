@@ -155,13 +155,12 @@ class DataSourceTest extends PHPUnit_Framework_TestCase {
     }
 
     public function testCreatePDO () {
-        $data_source = new \Gajus\Doll\DataSource([
-            'username' => 'travis',
-            'database' => 'doll',
-            'driver_options' => [
-                \PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION
-            ]
-        ]);
+        $dsn = $_ENV['dsn'];
+        $dsn['driver_options'] = [
+            \PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION
+        ];
+
+        $data_source = new \Gajus\Doll\DataSource($dsn);
 
         $dbh = $data_source->constructPDO('PDO');
 

@@ -22,4 +22,16 @@
             <directory>./src/</directory>
         </whitelist>
     </filter>
+
+    <php>
+        <env name="username" value="travis" />
+        <env name="database" value="doll" />
+        <!--
+            <env name="host" value="" />
+            <env name="driver" value="" />
+            <env name="database" value="" />
+            <env name="username" value="" />
+            <env name="password" value="" />
+        -->
+    </php>
 </phpunit>
