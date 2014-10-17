@@ -252,6 +252,7 @@ class PDO extends \PDO {
         parent::setAttribute(\PDO::ATTR_EMULATE_PREPARES, false);
         parent::setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
         parent::setAttribute(\PDO::ATTR_STATEMENT_CLASS, ['Gajus\Doll\PDOStatement', [$this]]);
+        parent::setAttribute(\PDO::ATTR_DEFAULT_FETCH_MODE, \PDO::FETCH_ASSOC);
 
         $this->is_connected = true;
 
