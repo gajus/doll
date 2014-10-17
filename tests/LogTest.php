@@ -17,6 +17,15 @@ class LogTest extends PHPUnit_Framework_TestCase {
         $this->assertTrue($this->db->getAttribute(\Gajus\Doll\PDO::ATTR_LOGGING));
     }
 
+    /**
+     * @expectedException Gajus\Doll\Exception\RuntimeException
+     * @expectedExceptionMessage Cannot change Gajus\Doll\PDO::ATTR_LOGGING value after connection is established.
+     */
+    public function testDoNotAllowLoggingAfterConnection () {
+        $this->db->query("SELECT 1");
+        $this->db->setAttribute(\Gajus\Doll\PDO::ATTR_LOGGING, null);
+    }
+    
     public function testLogFormat () {
         $this->db->setAttribute(\Gajus\Doll\PDO::ATTR_LOGGING, true);
 

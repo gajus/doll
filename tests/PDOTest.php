@@ -8,6 +8,22 @@ class PDOTest extends PHPUnit_Framework_TestCase {
     }
 
     /**
+     * @expectedException Gajus\Doll\Exception\InvalidArgumentException
+     * @expectedExceptionMessage Doll does not allow to change PDO::ATTR_ERRMODE.
+     */
+    public function testDoNotAllowToChangeAttributeErrorMode () {
+        $this->db->setAttribute(\PDO::ATTR_ERRMODE, null);
+    }
+
+    /**
+     * @expectedException Gajus\Doll\Exception\InvalidArgumentException
+     * @expectedExceptionMessage Doll does not allow to change PDO::ATTR_STATEMENT_CLASS.
+     */
+    public function testDoNotAllowToChangeAttributeStatementClass () {
+        $this->db->setAttribute(\PDO::ATTR_STATEMENT_CLASS, null);
+    }
+
+    /**
      * @dataProvider defaultAttributeProvider
      */
     public function testDefaultAttribute ($attribute, $value) {
@@ -16,7 +32,6 @@ class PDOTest extends PHPUnit_Framework_TestCase {
 
     public function defaultAttributeProvider () {
         return [
-            #[\PDO::ATTR_STRINGIFY_FETCHES, false],
             #[\PDO::ATTR_EMULATE_PREPARES, false],
             [\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION],
             [\PDO::ATTR_DEFAULT_FETCH_MODE, \PDO::FETCH_ASSOC]

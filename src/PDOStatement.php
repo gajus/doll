@@ -28,6 +28,7 @@ class PDOStatement extends \PDOStatement {
     }
 
     /**
+     * @see Gajus\Doll\PDO
      * @param string $original_query_string Original query might use named placeholders. Inherited statement will always use question-mark placeholders.
      * @param array $placeholders
      * @return null
@@ -70,8 +71,6 @@ class PDOStatement extends \PDOStatement {
             } else if (array_diff(array_keys($parameters), $placeholder_names)) {
                 throw new Exception\InvalidArgumentException('Prepared statement executed with undefined parameters.');
             }
-
-            #die(var_dump( $this->placeholders, $parameters, $this ));
 
             foreach ($this->placeholders as $index => $placeholder) {
                 $this->bindValue($index + 1, $parameters[$placeholder['name']], $placeholder['type']);

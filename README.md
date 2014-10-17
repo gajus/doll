@@ -45,6 +45,17 @@ The connection is deferred until either of the following methods are invoked:
 * [PDO::rollBack()](http://php.net/manual/en/pdo.rollback.php)
 * [PDOStatement::execute()](http://php.net/manual/en/pdostatement.execute.php)
 
+## Default Attributes
+
+| Attribute | PDO | | Doll | Reasoning |
+| --- | --- | --- | --- |
+| `PDO::ATTR_ERRMODE` | `PDO::ERRMODE_SILENT` | `PDO::ERRMODE_EXCEPTION` | Allows [method chaining](#method-chaining). |
+| `PDO::ATTR_EMULATE_PREPARES` | `false` | `true` | [`PDO_MYSQL`](http://php.net/manual/en/ref.pdo-mysql.php) will take advantage of native prepared statement support present in MySQL 4.1 and higher. It will always [fall back](http://lt1.php.net/manual/en/pdo.setattribute.php) to emulating the prepared statement if the driver cannot successfully prepare the current query. |
+| `PDO::ATTR_DEFAULT_FETCH_MODE` | `PDO::FETCH_BOTH` | `PDO::FETCH_ASSOC` | More convenient. |
+| `PDO::ATTR_STATEMENT_CLASS` | `PDOStatement` | `Gajus\Doll\PDOStatement` | Required for the [extended type hinting](#extended-type-hinting) implementation. |
+
+Attributes not mentioned in the above table do not differ.
+
 ## Method Chaining
 
 [PDOStatement::execute()](http://www.php.net/manual/en/pdostatement.execute.php) returns a boolean value indicating the state of the transaction, e.g.
@@ -66,7 +77,9 @@ $input = $db
     ->fetch(PDO::FETCH_COLUMN);
 ```
 
-## Inline Type Hinting
+## Extended Type Hinting
+
+### Inline Type Hinting
 
 [PDOStatement::bindValue()](http://php.net/manual/en/pdostatement.bindvalue.php) method allows to set the parameter type. However, the syntax is verbose:
 

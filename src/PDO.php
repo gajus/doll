@@ -59,6 +59,10 @@ class PDO extends \PDO {
             throw new Exception\InvalidArgumentException('Doll does not allow to change PDO::ATTR_ERRMODE.');
         }
 
+        if ($attribute === \PDO::ATTR_STATEMENT_CLASS) {
+            throw new Exception\InvalidArgumentException('Doll does not allow to change PDO::ATTR_STATEMENT_CLASS.');
+        }
+
         if ($attribute === \Gajus\Doll\PDO::ATTR_LOGGING) {
             if ($this->isConnected()) {
                 throw new Exception\RuntimeException('Cannot change Gajus\Doll\PDO::ATTR_LOGGING value after connection is established.');
@@ -248,7 +252,6 @@ class PDO extends \PDO {
             $this->data_source->getDriverOptions()
         );
 
-        parent::setAttribute(\PDO::ATTR_STRINGIFY_FETCHES, false);
         parent::setAttribute(\PDO::ATTR_EMULATE_PREPARES, false);
         parent::setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
         parent::setAttribute(\PDO::ATTR_STATEMENT_CLASS, ['Gajus\Doll\PDOStatement', [$this]]);
