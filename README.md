@@ -56,7 +56,7 @@ The connection is deferred until either of the following methods are invoked:
 
 | Attribute | Reason |
 | --- | --- | --- | --- |
-| `PDO::ATTR_ERRMODE` | Allows [method chaining](#method-chaining). |
+| `PDO::ATTR_ERRMODE` | Enables [method chaining](#method-chaining). |
 | `PDO::ATTR_EMULATE_PREPARES` | [`PDO_MYSQL`](http://php.net/manual/en/ref.pdo-mysql.php) will take advantage of native prepared statement support present in MySQL 4.1 and higher. It will always [fall back](http://lt1.php.net/manual/en/pdo.setattribute.php) to emulating the prepared statement if the driver cannot successfully prepare the current query. |
 | `PDO::ATTR_DEFAULT_FETCH_MODE` | More convenient. |
 | `PDO::ATTR_STATEMENT_CLASS` | Required for the [extended type hinting](#extended-type-hinting) implementation. |
@@ -115,7 +115,33 @@ Doll implementation supports all of the parameter types:
 |`s`|`PDO::PARAM_STR`|
 |`l`|`PDO::PARAM_LOB`|
 
-### Placeholder Reuse
+### Inferred Type Hinting
+
+When parameter name is "id" or ends with "_id", unless an explicit parameter type is set, Doll will use `PDO::PARAM_INT`, e.g.
+
+```php
+$db->prepare("SELECT :id, :foo_id");
+```
+
+Is equivalent to:
+
+```php
+$db->prepare("SELECT i:id, i:foo_id");
+```
+
+You can explicitly set the parameter type:
+
+```php
+$db->prepare("SELECT s:id, s:foo_id");
+```
+
+You can disable the inferred type hinting:
+
+```php
+$db->setAttribute(\Gajus\Doll\PDO::ATTR_INFERRED_TYPE_HINTING, false);
+```
+
+## Placeholder Reuse
 
 PDO implementation does not allow reuse of the placeholders, e.g.
 

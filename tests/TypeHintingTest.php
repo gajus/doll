@@ -30,4 +30,24 @@ class TypeHintingTest extends PHPUnit_Framework_TestCase {
             ['l', PDO::PARAM_LOB]
         ];
     }
+
+    /**
+     * @dataProvider inferredTypeHintingProvider
+     */
+    public function testInferredTypeHinting ($parameter_name) {
+        $sth = $this->db->prepare("SELECT :{$parameter_name}");
+
+        $reflection = new ReflectionProperty($sth, 'placeholders');
+        $reflection->setAccessible(true);
+        $placeholders = $reflection->getValue($sth);
+
+        $this->assertSame($placeholders[0]['type'], PDO::PARAM_INT);
+    }
+
+    public function inferredTypeHintingProvider () {
+        return [
+            ['id'],
+            ['foo_id']
+        ];
+    }
 }

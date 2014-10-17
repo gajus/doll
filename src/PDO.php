@@ -7,6 +7,7 @@ namespace Gajus\Doll;
  */
 class PDO extends \PDO {
     const ATTR_LOGGING = 'Gajus\Doll\1';
+    const ATTR_INFERRED_TYPE_HINTING = 'Gajus\Doll\2';
 
     private
         /**
@@ -24,9 +25,11 @@ class PDO extends \PDO {
          */
         $attributes = [],
         /**
-         * @var boolean
+         * Values for attributes defined in the Gajus\Doll\PDO class.
+         * 
+         * @var array
          */
-        $logging = false,
+        $custom_attributes = [],
         /**
          * @var array
          */
@@ -39,6 +42,9 @@ class PDO extends \PDO {
      */
     public function __construct (\Gajus\Doll\DataSource $data_source) {
         $this->data_source = $data_source;
+
+        $this->setAttribute(\Gajus\Doll\PDO::ATTR_INFERRED_TYPE_HINTING, true);
+        $this->setAttribute(\Gajus\Doll\PDO::ATTR_LOGGING, false);
     }
 
     /**
@@ -63,16 +69,18 @@ class PDO extends \PDO {
             throw new Exception\InvalidArgumentException('Doll does not allow to change PDO::ATTR_STATEMENT_CLASS.');
         }
 
+        if ($attribute === \Gajus\Doll\PDO::ATTR_INFERRED_TYPE_HINTING) {
+            $this->custom_attributes[$attribute] = !!$value;
+
+            return;
+        }
+        
         if ($attribute === \Gajus\Doll\PDO::ATTR_LOGGING) {
             if ($this->isConnected()) {
                 throw new Exception\RuntimeException('Cannot change Gajus\Doll\PDO::ATTR_LOGGING value after connection is established.');
             }
 
-            if (!is_bool($value)) {
-                throw new Exception\InvalidArgumentException('Parameter value is not boolean.');
-            }
-
-            $this->logging = $value;
+            $this->custom_attributes[$attribute] = !!$value;
 
             return;
         }
@@ -89,8 +97,8 @@ class PDO extends \PDO {
      * @return mixed
      */
     public function getAttribute ($attribute) {
-        if ($attribute === \gajus\doll\PDO::ATTR_LOGGING) {
-            return $this->logging;
+        if ($attribute === \Gajus\Doll\PDO::ATTR_LOGGING || $attribute === \Gajus\Doll\PDO::ATTR_INFERRED_TYPE_HINTING) {
+            return $this->custom_attributes[$attribute];
         }
 
         $this->connect();
@@ -119,13 +127,33 @@ class PDO extends \PDO {
         $placeholders = [];
         
         $query_string_with_question_mark_placeholders = preg_replace_callback('/([bnisl]?)\:(\w+)/', function ($b) use ($param_types, &$placeholders) {
-            $placeholders[] = [
-                'name' => $b[2],
-                'type' => $b[1] ? $param_types[$b[1]] : \PDO::PARAM_STR
+            $placeholder = [
+                'name' => $b[2]
             ];
+
+            if (strtolower($placeholder['name']) !== $placeholder['name']) {
+                throw new Exception\InvalidArgumentException('Placeholder names must be lowercase.');
+            }
+
+            if ($b[1]) {
+                $placeholder['type'] = $param_types[$b[1]];
+            } else if ($this->getAttribute(\Gajus\Doll\PDO::ATTR_INFERRED_TYPE_HINTING)) {
+                if ($placeholder['name'] === 'id' || mb_substr($placeholder['name'], -3) === '_id') {
+                    $placeholder['type'] = \PDO::PARAM_INT;
+                }
+            }
+
+            if (!isset($placeholder['type'])) {
+                $placeholder['type'] = \PDO::PARAM_STR;
+            }
+
+            $placeholders[] = $placeholder;
 
             return '?';
         }, $query_string);
+
+        #if (!empty($placeholders))
+        #die(var_dump( $query_string_with_question_mark_placeholders, $placeholders ));
 
         $statement = parent::prepare($query_string_with_question_mark_placeholders, $driver_options);
         $statement->setOriginalQueryPlaceholders($query_string, $placeholders);
@@ -217,7 +245,7 @@ class PDO extends \PDO {
      * @return null
      */
     public function on ($method, $statement, $execution_wall_time = null, array $parameters = []) {
-        if ($method !== 'prepare' && $this->logging) {
+        if ($method !== 'prepare' && $this->getAttribute(\Gajus\Doll\PDO::ATTR_LOGGING)) {
             $statement = trim(preg_replace('/\s+/', ' ', str_replace("\n", ' ', $statement)));
             $backtrace = debug_backtrace(\DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1];
 
@@ -263,7 +291,7 @@ class PDO extends \PDO {
             $this->setAttribute($attribute, $value);
         }
 
-        if ($this->logging) {
+        if ($this->getAttribute(\Gajus\Doll\PDO::ATTR_LOGGING)) {
             parent::exec('SET `profiling` = 1');
             parent::exec('SET `profiling_history_size` = 100');
         }
