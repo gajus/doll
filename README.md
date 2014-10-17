@@ -61,7 +61,7 @@ The connection is deferred until either of the following methods are invoked:
 | `PDO::ATTR_DEFAULT_FETCH_MODE` | More convenient. |
 | `PDO::ATTR_STATEMENT_CLASS` | Required for the [extended type hinting](#extended-type-hinting) implementation. |
 
-Attributes not mentioned in the above table do not differ.
+Values for attributes not in the table do not differ.
 
 ## Method Chaining
 
