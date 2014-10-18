@@ -124,10 +124,10 @@ class PDO extends \PDO {
      * @param array $driver_options
      * @return Gajus\Doll\PDOStatement
      */
-    public function prepare ($query_string, $driver_options = []) {
+    public function prepare ($raw_query_string, $driver_options = []) {
         $this->connect();
 
-        $this->on('prepare', $query_string);
+        $this->on('prepare', $raw_query_string);
 
         $named_parameter_markers = [];
         
@@ -155,10 +155,10 @@ class PDO extends \PDO {
             $named_parameter_markers[] = $parameter_marker;
 
             return '?';
-        }, $query_string);
+        }, $raw_query_string);
 
         $statement = parent::prepare($query_string_with_question_mark_parameter_markers, $driver_options);
-        $statement->setParameterMarkerNames($query_string, $named_parameter_markers);
+        $statement->setParameterMarkerNames($raw_query_string, $named_parameter_markers);
 
         return $statement;
     }
