@@ -153,20 +153,4 @@ class DataSourceTest extends PHPUnit_Framework_TestCase {
             'port' => '3306'
         ]);
     }
-
-    public function testCreatePDO () {
-        $dsn = $_ENV['dsn'];
-        $dsn['driver_options'] = [
-            \PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION
-        ];
-
-        $data_source = new \Gajus\Doll\DataSource($dsn);
-
-        $dbh = $data_source->constructPDO('PDO');
-
-        $this->assertInstanceOf('PDO', $dbh);
-
-        $this->assertSame(\PDO::ERRMODE_EXCEPTION, $dbh->getAttribute(\PDO::ATTR_ERRMODE));
-        $this->assertSame('doll', $dbh->query("SELECT DATABASE()")->fetch(\PDO::FETCH_COLUMN));
-    }
 }

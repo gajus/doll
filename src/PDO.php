@@ -174,20 +174,19 @@ class PDO extends \PDO {
     }
 
     /**
-     * The implementation might seem odd, though the benchmark (PHP 5.4) shows
-     * that such implementation is noticeably faster than using call_user_func_array.
-     *
-     * Method [ <internal:PDO> public method query ] {}
+     * @see https://github.com/gajus/doll/issues/15
+     * @see https://github.com/gajus/doll/issues/14
      */
     public function query ($statement) {
         $this->connect();
 
         $execution_wall_time = -microtime(true);
 
-        // @todo Static redirect.
-        $args = func_get_args();
-        
-        $response = call_user_func_array(['parent', 'query'], $args);
+        if (func_num_args() > 1) {
+            throw new Exception\BadMethodCallException('Method does not expect the additional parameters.');
+        }
+
+        $response = parent::query($statement);
 
         $this->on('query', $statement, $execution_wall_time + microtime(true));
 
@@ -236,7 +235,7 @@ class PDO extends \PDO {
     }
 
     /**
-     * This has to be public since it is accessed by the instance of \gajus\doll\PDOStatement.
+     * This has to be public since it is accessed by the instance of \Gajus\Doll\PDOStatement.
      *
      * @param string $method Method used to execute the query: exec, prepare/execute, query, including beginTransaction, commit and rollBack.
      * @param string $statement The query or prepared statement.
@@ -245,20 +244,22 @@ class PDO extends \PDO {
      * @return null
      */
     public function on ($method, $statement, $execution_wall_time = null, array $parameters = []) {
-        if ($method !== 'prepare' && $this->getAttribute(\Gajus\Doll\PDO::ATTR_LOGGING)) {
-            $statement = trim(preg_replace('/\s+/', ' ', str_replace("\n", ' ', $statement)));
-            $backtrace = debug_backtrace(\DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1];
+        if ($method === 'prepare' || !$this->getAttribute(\Gajus\Doll\PDO::ATTR_LOGGING)) {
+            return;
+        }
 
-            $this->log[] = [
-                'statement' => $statement,
-                'parameters' => $parameters,
-                'execution_wall_time' => $execution_wall_time,
-                'backtrace' => $backtrace
-            ];
-        
-            if (count($this->log) % 100 === 0) {
-                $this->applyProfileData();
-            }
+        $statement = trim(preg_replace('/\s+/', ' ', str_replace("\n", ' ', $statement)));
+        $backtrace = debug_backtrace(\DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1];
+
+        $this->log[] = [
+            'statement' => $statement,
+            'parameters' => $parameters,
+            'execution_wall_time' => $execution_wall_time,
+            'backtrace' => $backtrace
+        ];
+    
+        if (count($this->log) % 100 === 0) {
+            $this->applyProfileData();
         }
     }
 

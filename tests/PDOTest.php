@@ -7,7 +7,12 @@ class PDOTest extends PHPUnit_Framework_TestCase {
         $this->db = new \Gajus\Doll\PDO(new \Gajus\Doll\DataSource($_ENV['dsn']));
     }
 
-    public function testDummy () {
-        $this->assertTrue(true);
+    /**
+     * @see https://github.com/gajus/doll/issues/15
+     * @expectedException Gajus\Doll\Exception\BadMethodCallException
+     * @expectedExceptionMessage Method does not expect the additional parameters.
+     */
+    public function testQueryWithMoreThanOneParameter () {
+        $this->db->query("SELECT 1", null);
     }
 }

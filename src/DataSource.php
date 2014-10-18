@@ -24,6 +24,8 @@ class DataSource {
 
     private
         /**
+         * Definition of the data source.
+         * 
          * @var array
          */
         $data_source = [];
@@ -98,13 +100,5 @@ class DataSource {
      */
     public function getDriverOptions () {
         return isset($this->data_source['driver_options']) ? $this->data_source['driver_options'] : [];
-    }
-
-    /**
-     * @param string $pdo_class Name of the PDO class.
-     * @return Gajus\Doll\PDO
-     */
-    public function constructPDO ($pdo_class = 'Gajus\Doll\PDO') {
-        return new $pdo_class ($this->getDSN(), $this->getUsername(), $this->getPassword(), $this->getDriverOptions());
     }
 }
