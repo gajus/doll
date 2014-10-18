@@ -152,9 +152,6 @@ class PDO extends \PDO {
             return '?';
         }, $query_string);
 
-        #if (!empty($placeholders))
-        #die(var_dump( $query_string_with_question_mark_placeholders, $placeholders ));
-
         $statement = parent::prepare($query_string_with_question_mark_placeholders, $driver_options);
         $statement->setOriginalQueryPlaceholders($query_string, $placeholders);
 
@@ -176,6 +173,7 @@ class PDO extends \PDO {
     /**
      * @see https://github.com/gajus/doll/issues/15
      * @see https://github.com/gajus/doll/issues/14
+     * @return PDOStatement
      */
     public function query ($statement) {
         $this->connect();

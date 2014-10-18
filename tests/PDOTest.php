@@ -11,8 +11,15 @@ class PDOTest extends PHPUnit_Framework_TestCase {
      * @see https://github.com/gajus/doll/issues/15
      * @expectedException Gajus\Doll\Exception\BadMethodCallException
      * @expectedExceptionMessage Method does not expect the additional parameters.
+     * @return PDOStatement
      */
     public function testQueryWithMoreThanOneParameter () {
         $this->db->query("SELECT 1", null);
+    }
+
+    public function testQueryReturnsPDOStatement () {
+        $sth = $this->db->query("SELECT 1");
+
+        $this->assertInstanceOf('Gajus\Doll\PDOStatement', $sth);
     }
 }
