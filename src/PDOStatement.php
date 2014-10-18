@@ -14,11 +14,11 @@ class PDOStatement extends \PDOStatement {
         /**
          * @var string
          */
-        $original_query_string,
+        $raw_query_string,
         /**
          * @var array
          */
-        $placeholders;
+        $named_parameter_markers;
     
     /**
      * @param PDO $dbh
@@ -28,18 +28,22 @@ class PDOStatement extends \PDOStatement {
     }
 
     /**
-     * @see Gajus\Doll\PDO
-     * @param string $original_query_string Original query might use named placeholders. Inherited statement will always use question-mark placeholders.
-     * @param array $placeholders
+     * When the prepared statement is using named parameter markers, the query is overwritten with an
+     * equivalent query using question mark parameter markers. The raw query is used for logging purposes.
+     *
+     * Names of the parameter markers are used to locate the assigned value when executing the statement.
+     * 
+     * @param string $raw_query_string
+     * @param array $named_parameter_markers
      * @return null
      */
-    public function setOriginalQueryPlaceholders ($original_query_string, array $placeholders) {
-        if ($this->placeholders !== null) {
-            throw new Exception\LogicException('Placeholders can be set only at the time of building the statement.');
+    public function setParameterMarkerNames ($raw_query_string, array $named_parameter_markers) {
+        if ($this->named_parameter_markers !== null) {
+            throw new Exception\LogicException('Parameter markers can be set only at the time of building the statement.');
         }
 
-        $this->original_query_string = $original_query_string;
-        $this->placeholders = $placeholders;
+        $this->raw_query_string = $raw_query_string;
+        $this->named_parameter_markers = $named_parameter_markers;
     }
     
     /**
@@ -61,25 +65,25 @@ class PDOStatement extends \PDOStatement {
 
         // Using named parameters
         if ($parameters && !array_key_exists(0, $parameters)) {
-            $placeholder_names = array_unique(array_map(function ($pn) {
+            $parameter_marker_names = array_unique(array_map(function ($pn) {
                     return $pn['name'];
-            }, $this->placeholders));
+            }, $this->named_parameter_markers));
 
-            if (array_diff($placeholder_names, array_keys($parameters))) {
+            if (array_diff($parameter_marker_names, array_keys($parameters))) {
                 // @todo Improve phrasing.
-                throw new Exception\InvalidArgumentException('Prepared statement executed without values for all the placeholders.');
-            } else if (array_diff(array_keys($parameters), $placeholder_names)) {
+                throw new Exception\InvalidArgumentException('Prepared statement executed without values for all the parameter markers.');
+            } else if (array_diff(array_keys($parameters), $parameter_marker_names)) {
                 throw new Exception\InvalidArgumentException('Prepared statement executed with undefined parameters.');
             }
 
-            foreach ($this->placeholders as $index => $placeholder) {
-                $this->bindValue($index + 1, $parameters[$placeholder['name']], $placeholder['type']);
+            foreach ($this->named_parameter_markers as $index => $parameter_marker) {
+                $this->bindValue($index + 1, $parameters[$parameter_marker['name']], $parameter_marker['type']);
             }
 
             $execute = parent::execute();
         } else {
-            if ($this->placeholders) {
-                throw new Exception\InvalidArgumentException('Prepared statement with named placeholders executed using list.');
+            if ($this->named_parameter_markers) {
+                throw new Exception\InvalidArgumentException('Prepared statement with named parameter markers executed using list.');
             }
 
             $execute = parent::execute($parameters);
@@ -99,7 +103,7 @@ class PDOStatement extends \PDOStatement {
             }
         }
 
-        $this->dbh->on('execute', $this->original_query_string, $execution_wall_time + microtime(true), $parameters);
+        $this->dbh->on('execute', $this->raw_query_string, $execution_wall_time + microtime(true), $parameters);
 
         return $this;
     }

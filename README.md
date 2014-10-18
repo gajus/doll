@@ -141,20 +141,17 @@ You can disable the inferred type hinting:
 $db->setAttribute(\Gajus\Doll\PDO::ATTR_INFERRED_TYPE_HINTING, false);
 ```
 
-## Placeholder Reuse
+## Parameter Marker Reuse
 
-PDO implementation does not allow reuse of the placeholders, e.g.
+Using Doll, you can reuse the named parameter markers in your prepared statements, e.g.
 
 ```php
-$db->setAttribute(\PDO::ATTR_EMULATE_PREPARES, false);
 $db->prepare("SELECT :foo, :foo");
 ```
 
-The above would cause the following error:
+The native PDO implementation does not support it. It will raise the following error:
 
 > PDOException: SQLSTATE[HY093]: Invalid parameter number
-
-Doll allows reuse of placeholders.
 
 ## Logging and Benchmarking
 

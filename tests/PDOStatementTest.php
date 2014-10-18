@@ -24,7 +24,7 @@ class PDOStatementTest extends PHPUnit_Framework_TestCase {
 
     /**
      * @expectedException Gajus\Doll\Exception\InvalidArgumentException
-     * @expectedExceptionMessage Prepared statement executed without values for all the placeholders.
+     * @expectedExceptionMessage Prepared statement executed without values for all the parameter markers.
      */
     public function testExecuteStatementWithoutAllTheValues () {
         $this->db
@@ -34,9 +34,9 @@ class PDOStatementTest extends PHPUnit_Framework_TestCase {
 
     /**
      * @expectedException Gajus\Doll\Exception\InvalidArgumentException
-     * @expectedExceptionMessage Prepared statement with named placeholders executed using list.
+     * @expectedExceptionMessage Prepared statement with named parameter markers executed using list.
      */
-    public function testExecuteStatementWithNamedPlaceholdersUsingList () {
+    public function testExecuteStatementWithNamedParameterMarkersUsingList () {
         $this->db
             ->prepare("SELECT :foo, :bar")
             ->execute([1, 2]);

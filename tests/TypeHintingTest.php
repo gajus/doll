@@ -10,14 +10,14 @@ class TypeHintingTest extends PHPUnit_Framework_TestCase {
     /**
      * @dataProvider typeHintProvider
      */
-    public function testTypeHint ($name, $value) {
-        $sth = $this->db->prepare("SELECT {$name}:foo");
+    public function testTypeHint ($parameter_marker_name, $value) {
+        $sth = $this->db->prepare("SELECT {$parameter_marker_name}:foo");
 
-        $reflection = new ReflectionProperty($sth, 'placeholders');
+        $reflection = new ReflectionProperty($sth, 'named_parameter_markers');
         $reflection->setAccessible(true);
-        $placeholders = $reflection->getValue($sth);
+        $named_parameter_markers = $reflection->getValue($sth);
 
-        $this->assertSame($value, $placeholders[0]['type']);
+        $this->assertSame($value, $named_parameter_markers[0]['type']);
     }
 
     public function typeHintProvider () {
@@ -34,14 +34,14 @@ class TypeHintingTest extends PHPUnit_Framework_TestCase {
     /**
      * @dataProvider inferredTypeHintingProvider
      */
-    public function testInferredTypeHinting ($parameter_name) {
-        $sth = $this->db->prepare("SELECT :{$parameter_name}");
+    public function testInferredTypeHinting ($parameter_marker_name) {
+        $sth = $this->db->prepare("SELECT :{$parameter_marker_name}");
 
-        $reflection = new ReflectionProperty($sth, 'placeholders');
+        $reflection = new ReflectionProperty($sth, 'named_parameter_markers');
         $reflection->setAccessible(true);
-        $placeholders = $reflection->getValue($sth);
+        $named_parameter_markers = $reflection->getValue($sth);
 
-        $this->assertSame($placeholders[0]['type'], PDO::PARAM_INT);
+        $this->assertSame($named_parameter_markers[0]['type'], PDO::PARAM_INT);
     }
 
     public function inferredTypeHintingProvider () {

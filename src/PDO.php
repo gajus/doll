@@ -55,16 +55,20 @@ class PDO extends \PDO {
     }
 
     /**
-     * Logs database handle attributes that are set before PDO is constructed.
+     * When setAttribute is used prior to connecting to the database, the attribute is logged.
+     * When setAttribute is used after connecting to the database, the attribute is applied.
+     * The logged attributes are automatically applied after connecting to the database.
      * 
      * @param string $attribute
      * @param mixed $value
      */
     public function setAttribute ($attribute, $value) {
+        // @see https://github.com/gajus/doll/issues/16
         if ($attribute === \PDO::ATTR_ERRMODE) {
             throw new Exception\InvalidArgumentException('Doll does not allow to change PDO::ATTR_ERRMODE.');
         }
 
+        // @see
         if ($attribute === \PDO::ATTR_STATEMENT_CLASS) {
             throw new Exception\InvalidArgumentException('Doll does not allow to change PDO::ATTR_STATEMENT_CLASS.');
         }
@@ -124,36 +128,36 @@ class PDO extends \PDO {
             'l' => \PDO::PARAM_LOB
         ];
 
-        $placeholders = [];
+        $named_parameter_markers = [];
         
-        $query_string_with_question_mark_placeholders = preg_replace_callback('/([bnisl]?)\:(\w+)/', function ($b) use ($param_types, &$placeholders) {
-            $placeholder = [
+        $query_string_with_question_mark_parameter_markers = preg_replace_callback('/([bnisl]?)\:(\w+)/', function ($b) use ($param_types, &$named_parameter_markers) {
+            $parameter_marker = [
                 'name' => $b[2]
             ];
 
-            if (strtolower($placeholder['name']) !== $placeholder['name']) {
-                throw new Exception\InvalidArgumentException('Placeholder names must be lowercase.');
+            if (strtolower($parameter_marker['name']) !== $parameter_marker['name']) {
+                throw new Exception\InvalidArgumentException('Parameter marker names must be lowercase.');
             }
 
             if ($b[1]) {
-                $placeholder['type'] = $param_types[$b[1]];
+                $parameter_marker['type'] = $param_types[$b[1]];
             } else if ($this->getAttribute(\Gajus\Doll\PDO::ATTR_INFERRED_TYPE_HINTING)) {
-                if ($placeholder['name'] === 'id' || mb_substr($placeholder['name'], -3) === '_id') {
-                    $placeholder['type'] = \PDO::PARAM_INT;
+                if ($parameter_marker['name'] === 'id' || mb_substr($parameter_marker['name'], -3) === '_id') {
+                    $parameter_marker['type'] = \PDO::PARAM_INT;
                 }
             }
 
-            if (!isset($placeholder['type'])) {
-                $placeholder['type'] = \PDO::PARAM_STR;
+            if (!isset($parameter_marker['type'])) {
+                $parameter_marker['type'] = \PDO::PARAM_STR;
             }
 
-            $placeholders[] = $placeholder;
+            $named_parameter_markers[] = $parameter_marker;
 
             return '?';
         }, $query_string);
 
-        $statement = parent::prepare($query_string_with_question_mark_placeholders, $driver_options);
-        $statement->setOriginalQueryPlaceholders($query_string, $placeholders);
+        $statement = parent::prepare($query_string_with_question_mark_parameter_markers, $driver_options);
+        $statement->setParameterMarkerNames($query_string, $named_parameter_markers);
 
         return $statement;
     }
