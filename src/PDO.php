@@ -35,6 +35,15 @@ class PDO extends \PDO {
          */
         $log = [];
 
+    static private
+        $parameter_types = [
+            'b' => \PDO::PARAM_BOOL,
+            'n' => \PDO::PARAM_NULL,
+            'i' => \PDO::PARAM_INT,
+            's' => \PDO::PARAM_STR,
+            'l' => \PDO::PARAM_LOB
+        ];
+
     /**
      * The constructor does not 
      * 
@@ -120,17 +129,9 @@ class PDO extends \PDO {
 
         $this->on('prepare', $query_string);
 
-        $param_types = [
-            'b' => \PDO::PARAM_BOOL,
-            'n' => \PDO::PARAM_NULL,
-            'i' => \PDO::PARAM_INT,
-            's' => \PDO::PARAM_STR,
-            'l' => \PDO::PARAM_LOB
-        ];
-
         $named_parameter_markers = [];
         
-        $query_string_with_question_mark_parameter_markers = preg_replace_callback('/([bnisl]?)\:(\w+)/', function ($b) use ($param_types, &$named_parameter_markers) {
+        $query_string_with_question_mark_parameter_markers = preg_replace_callback('/([bnisl]?)\:(\w+)/', function ($b) use (&$named_parameter_markers) {
             $parameter_marker = [
                 'name' => $b[2]
             ];
@@ -140,7 +141,7 @@ class PDO extends \PDO {
             }
 
             if ($b[1]) {
-                $parameter_marker['type'] = $param_types[$b[1]];
+                $parameter_marker['type'] = static::$parameter_types[$b[1]];
             } else if ($this->getAttribute(\Gajus\Doll\PDO::ATTR_INFERRED_TYPE_HINTING)) {
                 if ($parameter_marker['name'] === 'id' || mb_substr($parameter_marker['name'], -3) === '_id') {
                     $parameter_marker['type'] = \PDO::PARAM_INT;
