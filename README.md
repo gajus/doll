@@ -171,7 +171,7 @@ var_dump($log);
 
 The log output contains the following information about each query:
 
-```
+```php
 array(1) {
     [0]=>
         array(7) {
