@@ -16,7 +16,7 @@ class DataSource {
             'unix_socket' => null,
             'driver' => 'mysql',
             'database' => null,
-            'username' => null,
+            'user' => null,
             'password' => null,
             'charset' => 'utf8',
             'driver_options' => []
@@ -25,12 +25,12 @@ class DataSource {
     private
         /**
          * Definition of the data source.
-         * 
+         *
          * @var array
          */
         $data_source = [];
 
-    /** 
+    /**
      * @param array $data_source
      */
     public function __construct (array $data_source = []) {
@@ -51,7 +51,7 @@ class DataSource {
 
     /**
      * Generate the connection string.
-     * 
+     *
      * @return string
      */
     public function getDSN () {
@@ -84,8 +84,8 @@ class DataSource {
     /**
      * @return null|string
      */
-    public function getUsername () {
-        return isset($this->data_source['username']) ? $this->data_source['username'] : null;
+    public function getUser () {
+        return isset($this->data_source['user']) ? $this->data_source['user'] : null;
     }
 
     /**

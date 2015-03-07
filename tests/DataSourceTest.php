@@ -42,21 +42,21 @@ class DataSourceTest extends PHPUnit_Framework_TestCase {
     }
 
     /**
-     * @dataProvider getUsernameProvider
+     * @dataProvider getUserProvider
      */
-    public function testGetUsername ($input_data_source, $output_username) {
+    public function testGetUser ($input_data_source, $output_user) {
         $data_source = new \Gajus\Doll\DataSource($input_data_source);
 
-        $username = $data_source->getUsername();
+        $user = $data_source->getUser();
 
-        $this->assertSame($output_username, $username);
+        $this->assertSame($output_user, $user);
     }
 
-    public function getUsernameProvider () {
+    public function getUserProvider () {
         return [
             [
                 [
-                    'username' => 'foo'
+                    'user' => 'foo'
                 ],
                 'foo'
             ],
@@ -101,7 +101,7 @@ class DataSourceTest extends PHPUnit_Framework_TestCase {
 
         $driver_options = $data_source->getDriverOptions();
 
-        $this->assertSame($output_data_source, $driver_options);   
+        $this->assertSame($output_data_source, $driver_options);
     }
 
     public function getDriverOptionsProvider () {

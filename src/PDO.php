@@ -20,13 +20,13 @@ class PDO extends \PDO {
         $data_source,
         /**
          * Database attributes that were set before database connection is established.
-         * 
+         *
          * @var array
          */
         $attributes = [],
         /**
          * Values for attributes defined in the Gajus\Doll\PDO class.
-         * 
+         *
          * @var array
          */
         $custom_attributes = [],
@@ -45,8 +45,8 @@ class PDO extends \PDO {
         ];
 
     /**
-     * The constructor does not 
-     * 
+     * The constructor does not
+     *
      * @param array $constructor
      */
     public function __construct (\Gajus\Doll\DataSource $data_source) {
@@ -67,7 +67,7 @@ class PDO extends \PDO {
      * When setAttribute is used prior to connecting to the database, the attribute is logged.
      * When setAttribute is used after connecting to the database, the attribute is applied.
      * The logged attributes are automatically applied after connecting to the database.
-     * 
+     *
      * @param string $attribute
      * @param mixed $value
      */
@@ -87,7 +87,7 @@ class PDO extends \PDO {
 
             return;
         }
-        
+
         if ($attribute === \Gajus\Doll\PDO::ATTR_LOGGING) {
             if ($this->isConnected()) {
                 throw new Exception\RuntimeException('Cannot change Gajus\Doll\PDO::ATTR_LOGGING value after connection is established.');
@@ -130,7 +130,7 @@ class PDO extends \PDO {
         $this->on('prepare', $raw_query_string);
 
         $named_parameter_markers = [];
-        
+
         $query_string_with_question_mark_parameter_markers = preg_replace_callback('/([bnisl]?)\:(\w+)/', function ($b) use (&$named_parameter_markers) {
             $parameter_marker = [
                 'name' => $b[2]
@@ -167,7 +167,7 @@ class PDO extends \PDO {
         $this->connect();
 
         $execution_wall_time = -microtime(true);
-    
+
         $response = parent::exec($statement);
 
         $this->on('exec', $statement, $execution_wall_time + microtime(true));
@@ -200,14 +200,14 @@ class PDO extends \PDO {
         $this->connect();
 
         $execution_wall_time = -microtime(true);
-    
+
         $response = parent::beginTransaction();
 
         $this->on('beginTransaction', 'START TRANSACTION', $execution_wall_time + microtime(true));
 
         return $response;
     }
-    
+
     public function commit () {
         $this->connect();
 
@@ -216,10 +216,10 @@ class PDO extends \PDO {
         $response = parent::commit();
 
         $this->on('commit', 'COMMIT', $execution_wall_time + microtime(true));
-        
+
         return $response;
     }
-        
+
     /**
      * @return bool
      */
@@ -260,7 +260,7 @@ class PDO extends \PDO {
             'execution_wall_time' => $execution_wall_time,
             'backtrace' => $backtrace
         ];
-    
+
         if (count($this->log) % 100 === 0) {
             $this->applyProfileData();
         }
@@ -269,7 +269,7 @@ class PDO extends \PDO {
     /**
      * Connect to the database using the constructor parameter and attributes
      * that were collected prior to triggering connection to the database.
-     * 
+     *
      * @return null
      */
     private function connect () {
@@ -279,7 +279,7 @@ class PDO extends \PDO {
 
         parent::__construct(
             $this->data_source->getDSN(),
-            $this->data_source->getUsername(),
+            $this->data_source->getUser(),
             $this->data_source->getPassword(),
             $this->data_source->getDriverOptions()
         );
@@ -313,11 +313,11 @@ class PDO extends \PDO {
 
         $queries = \PDO::query("SHOW PROFILES")
             ->fetchAll(\PDO::FETCH_ASSOC);
-        
+
         // http://dev.mysql.com/doc/refman/5.7/en/show-profiles.html
         // "These statements are deprecated and will be removed in a future MySQL release. Use the Performance Schema instead; see Chapter 21, MySQL Performance Schema."
         // However, information_schema does not give access to the original query via the query_id.
-        
+
         #$queries = \PDO::query("SELECT * FROM `information_schema`.`profiling` ORDER BY `query_id`, `seq`")
         #    ->fetchAll(\PDO::FETCH_ASSOC);
 

@@ -9,7 +9,7 @@ Extended PDO with inline type hinting, deferred connection support, logging and 
 
 ## Single Parameter Constructor
 
-[PDO::__construct](http://uk3.php.net/manual/en/pdo.construct.php) is using Data Source Name (DSN) string to describe the connection. PDO DSN implementation does not include username, password and driver options.
+[PDO::__construct](http://uk3.php.net/manual/en/pdo.construct.php) is using Data Source Name (DSN) string to describe the connection. PDO DSN implementation does not include user, password and driver options.
 
 Doll instance is described using `DataSource` object:
 
@@ -18,7 +18,7 @@ $data_source = new \Gajus\Doll\DataSource([
     'host' => '127.0.0.1',
     'driver' => 'mysql',
     'database' => null,
-    'username' => null,
+    'user' => null,
     'password' => null,
     'charset' => 'utf8',
     'driver_options' => []
