@@ -32,6 +32,9 @@ class DataSource {
 
     /**
      * @param array $data_source
+     *
+     * @throws Exception\InvalidArgumentException
+     * @throws Exception\LogicException
      */
     public function __construct (array $data_source = []) {
         if (array_diff_key($data_source, static::$default_data_source)) {
