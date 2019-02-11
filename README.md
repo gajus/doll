@@ -48,14 +48,14 @@ The connection is deferred until either of the following methods are invoked:
 ## Default Attributes
 
 | Attribute | PDO | Doll |
-|---|---|---|---|
+|---|---|---|
 | `PDO::ATTR_ERRMODE` | `PDO::ERRMODE_SILENT` | `PDO::ERRMODE_EXCEPTION` |
 | `PDO::ATTR_EMULATE_PREPARES` | `false` | `true` |
 | `PDO::ATTR_DEFAULT_FETCH_MODE` | `PDO::FETCH_BOTH` | `PDO::FETCH_ASSOC` |
 | `PDO::ATTR_STATEMENT_CLASS` | `PDOStatement` | `Gajus\Doll\PDOStatement` |
 
 | Attribute | Reason |
-|---|---|---|---|
+|---|---|
 | `PDO::ATTR_ERRMODE` | Enables [method chaining](#method-chaining). |
 | `PDO::ATTR_EMULATE_PREPARES` | [`PDO_MYSQL`](http://php.net/manual/en/ref.pdo-mysql.php) will take advantage of native prepared statement support present in MySQL 4.1 and higher. It will always [fall back](http://lt1.php.net/manual/en/pdo.setattribute.php) to emulating the prepared statement if the driver cannot successfully prepare the current query. |
 | `PDO::ATTR_DEFAULT_FETCH_MODE` | More convenient. |
