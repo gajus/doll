@@ -19,7 +19,7 @@ class PDOStatement extends \PDOStatement {
          * @var array
          */
         $named_parameter_markers;
-    
+
     /**
      * @param PDO $dbh
      */
@@ -32,10 +32,12 @@ class PDOStatement extends \PDOStatement {
      * equivalent query using question mark parameter markers. The raw query is used for logging purposes.
      *
      * Names of the parameter markers are used to locate the assigned value when executing the statement.
-     * 
+     *
      * @param string $raw_query_string
      * @param array $named_parameter_markers
+     *
      * @return null
+     * @throws Exception\LogicException
      */
     public function setParameterMarkerNames ($raw_query_string, array $named_parameter_markers) {
         if ($this->named_parameter_markers !== null) {
@@ -45,20 +47,25 @@ class PDOStatement extends \PDOStatement {
         $this->raw_query_string = $raw_query_string;
         $this->named_parameter_markers = $named_parameter_markers;
     }
-    
+
     /**
      * @return $this
+     * @throws Exception\RuntimeException
      */
     public function nextRowset() {
         if (!parent::nextRowset()) {
             throw new Exception\RuntimeException('Rowset is not available.');
         }
-        
+
         return $this;
     }
 
     /**
+     * @param array $parameters
+     *
      * @return $this
+     * @throws Exception\InvalidArgumentException
+     * @throws Exception\RuntimeException
      */
     public function execute ($parameters = []) {
         $execution_wall_time = -microtime(true);

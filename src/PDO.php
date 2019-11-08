@@ -47,7 +47,10 @@ class PDO extends \PDO {
     /**
      * The constructor does not
      *
-     * @param array $constructor
+     * @param DataSource $data_source
+     *
+     * @throws Exception\InvalidArgumentException
+     * @throws Exception\RuntimeException
      */
     public function __construct (\Gajus\Doll\DataSource $data_source) {
         $this->data_source = $data_source;
@@ -64,12 +67,17 @@ class PDO extends \PDO {
     }
 
     /**
-     * When setAttribute is used prior to connecting to the database, the attribute is logged.
-     * When setAttribute is used after connecting to the database, the attribute is applied.
-     * The logged attributes are automatically applied after connecting to the database.
+     * When setAttribute is used prior to connecting to the database, the
+     * attribute is logged. When setAttribute is used after connecting to the
+     * database, the attribute is applied. The logged attributes are
+     * automatically applied after connecting to the database.
      *
      * @param string $attribute
      * @param mixed $value
+     *
+     * @return bool|void
+     * @throws Exception\InvalidArgumentException
+     * @throws Exception\RuntimeException
      */
     public function setAttribute ($attribute, $value) {
         // @see https://github.com/gajus/doll/issues/16
@@ -120,9 +128,10 @@ class PDO extends \PDO {
     }
 
     /**
-     * @param string $statement
+     * @param string $raw_query_string
      * @param array $driver_options
-     * @return Gajus\Doll\PDOStatement
+     *
+     * @return \Gajus\Doll\PDOStatement
      */
     public function prepare ($raw_query_string, $driver_options = []) {
         $this->connect();
@@ -178,7 +187,11 @@ class PDO extends \PDO {
     /**
      * @see https://github.com/gajus/doll/issues/15
      * @see https://github.com/gajus/doll/issues/14
+     *
+     * @param string $statement
+     *
      * @return PDOStatement
+     * @throws Exception\BadMethodCallException
      */
     public function query ($statement) {
         $this->connect();
